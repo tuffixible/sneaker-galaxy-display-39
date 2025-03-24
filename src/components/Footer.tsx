@@ -11,7 +11,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
             <Link to="/" className="text-2xl font-bold tracking-tight">
-              SNEAKERS
+              Xible Store
             </Link>
             <p className="mt-4 text-muted-foreground max-w-md">
               Premium sneaker catalog showcasing the latest styles and classic favorites. 
@@ -102,7 +102,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>© {currentYear} SNEAKERS. All rights reserved.</p>
+          <p>© {currentYear} Xible Store. All rights reserved.</p>
         </div>
       </div>
     </footer>

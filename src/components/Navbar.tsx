@@ -47,7 +47,7 @@ const Navbar = () => {
             to="/" 
             className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity"
           >
-            SNEAKERS
+            Xible Store
           </Link>
 
           {/* Desktop Navigation */}
