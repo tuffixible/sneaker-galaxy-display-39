@@ -1,9 +1,11 @@
 
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
   
   return (
     <footer className="bg-secondary py-16 px-6 md:px-8">
@@ -49,52 +51,52 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Navigation</h3>
+            <h3 className="font-semibold text-lg mb-4">{t('footerNavigation')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Home
+                  {t('navHome')}
                 </Link>
               </li>
               <li>
                 <Link to="/catalogo" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Catálogo
+                  {t('navCatalog')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                  About
+                  {t('navAbout')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Contact
+                  {t('navContact')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Customer Care</h3>
+            <h3 className="font-semibold text-lg mb-4">{t('footerCustomerCare')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/shipping" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Shipping Info
+                  {t('footerShippingInfo')}
                 </Link>
               </li>
               <li>
                 <Link to="/returns" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Returns & Exchanges
+                  {t('footerReturns')}
                 </Link>
               </li>
               <li>
                 <Link to="/size-guide" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Size Guide
+                  {t('footerSizeGuide')}
                 </Link>
               </li>
               <li>
                 <Link to="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
-                  FAQ
+                  {t('footerFAQ')}
                 </Link>
               </li>
             </ul>
@@ -102,7 +104,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>© {currentYear} Xible Store. All rights reserved.</p>
+          <p>© {currentYear} Xible Store. {t('footerRights')}</p>
         </div>
       </div>
     </footer>

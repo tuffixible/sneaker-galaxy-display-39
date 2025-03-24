@@ -3,12 +3,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Search, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const location = useLocation();
+  const { t } = useLanguage();
 
   // Toggle the mobile menu
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -81,7 +84,7 @@ const Navbar = () => {
                 location.pathname === "/" && "text-primary"
               )}
             >
-              Home
+              {t('navHome')}
             </Link>
             <Link 
               to="/catalogo" 
@@ -90,7 +93,7 @@ const Navbar = () => {
                 location.pathname === "/catalogo" && "text-primary"
               )}
             >
-              Catálogo
+              {t('navCatalog')}
             </Link>
             <Link 
               to="/about" 
@@ -99,7 +102,7 @@ const Navbar = () => {
                 location.pathname === "/about" && "text-primary"
               )}
             >
-              About
+              {t('navAbout')}
             </Link>
             <Link 
               to="/contact" 
@@ -108,7 +111,7 @@ const Navbar = () => {
                 location.pathname === "/contact" && "text-primary"
               )}
             >
-              Contact
+              {t('navContact')}
             </Link>
           </div>
 
@@ -134,6 +137,8 @@ const Navbar = () => {
               )}
             </Link>
             
+            <LanguageSelector />
+            
             <button
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80"
               onClick={toggleMenu}
@@ -158,25 +163,25 @@ const Navbar = () => {
               to="/" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              Home
+              {t('navHome')}
             </Link>
             <Link 
               to="/catalogo" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              Catálogo
+              {t('navCatalog')}
             </Link>
             <Link 
               to="/about" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              About
+              {t('navAbout')}
             </Link>
             <Link 
               to="/contact" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              Contact
+              {t('navContact')}
             </Link>
           </div>
         </div>

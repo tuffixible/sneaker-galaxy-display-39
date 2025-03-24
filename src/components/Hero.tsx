@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Product } from '@/data/products';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HeroProps {
   products: Product[];
@@ -13,6 +14,7 @@ const Hero = ({ products }: HeroProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const { t } = useLanguage();
 
   const handleDotClick = (index: number) => {
     if (index === activeIndex || isAnimating) return;
@@ -87,14 +89,14 @@ const Hero = ({ products }: HeroProps) => {
                     to={`/product/${product.id}`}
                     className="inline-flex items-center justify-center px-6 py-3 bg-foreground text-background font-medium rounded-full transition-all hover:bg-foreground/90"
                   >
-                    View details
+                    {t('viewDetails')}
                     <ArrowRight size={16} className="ml-2" />
                   </Link>
                   <Link
-                    to="/catalog"
+                    to="/catalogo"
                     className="inline-flex items-center justify-center px-6 py-3 bg-secondary text-foreground font-medium rounded-full transition-all hover:bg-secondary/80"
                   >
-                    Browse catalog
+                    {t('browseCatalog')}
                   </Link>
                 </div>
               </div>
