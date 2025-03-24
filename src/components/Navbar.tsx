@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [cartItems, setCartItems] = useState<number>(0);
   const location = useLocation();
 
   // Toggle the mobile menu
@@ -24,6 +25,27 @@ const Navbar = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Update cart count from localStorage
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartItems(cart.length);
+    };
+
+    // Initial load
+    updateCartCount();
+
+    // Listen for storage events to update cart count across tabs
+    window.addEventListener('storage', updateCartCount);
+    // Custom event for same-tab updates
+    window.addEventListener('cartUpdated', updateCartCount);
+
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('cartUpdated', updateCartCount);
+    };
   }, []);
 
   // Close mobile menu when changing routes
@@ -62,13 +84,13 @@ const Navbar = () => {
               Home
             </Link>
             <Link 
-              to="/catalog" 
+              to="/catalogo" 
               className={cn(
                 "text-sm font-medium hover:text-primary transition-colors",
-                location.pathname.includes("/catalog") && "text-primary"
+                location.pathname === "/catalogo" && "text-primary"
               )}
             >
-              Catalog
+              Catálogo
             </Link>
             <Link 
               to="/about" 
@@ -98,6 +120,20 @@ const Navbar = () => {
             >
               <Search size={18} />
             </button>
+            
+            <Link 
+              to="/cart" 
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80 relative"
+              aria-label="Cart"
+            >
+              <ShoppingBag size={18} />
+              {cartItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItems}
+                </span>
+              )}
+            </Link>
+            
             <button
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80"
               onClick={toggleMenu}
@@ -125,10 +161,10 @@ const Navbar = () => {
               Home
             </Link>
             <Link 
-              to="/catalog" 
+              to="/catalogo" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              Catalog
+              Catálogo
             </Link>
             <Link 
               to="/about" 
