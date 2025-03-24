@@ -5,7 +5,19 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  
+  // Translated description based on current language
+  const getDescription = () => {
+    switch(language) {
+      case 'pt':
+        return "Catálogo premium de tênis apresentando os últimos estilos e clássicos favoritos. Encontre seu par perfeito com nossa coleção selecionada.";
+      case 'es':
+        return "Catálogo premium de zapatillas que muestra los últimos estilos y los clásicos favoritos. Encuentra tu par perfecto con nuestra colección seleccionada.";
+      default: // 'en'
+        return "Premium sneaker catalog showcasing the latest styles and classic favorites. Find your perfect pair with our curated collection.";
+    }
+  };
   
   return (
     <footer className="bg-secondary py-16 px-6 md:px-8">
@@ -16,8 +28,7 @@ const Footer = () => {
               Xible Store
             </Link>
             <p className="mt-4 text-muted-foreground max-w-md">
-              Premium sneaker catalog showcasing the latest styles and classic favorites. 
-              Find your perfect pair with our curated collection.
+              {getDescription()}
             </p>
             <div className="mt-6 flex space-x-4">
               <a 
