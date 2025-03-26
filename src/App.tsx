@@ -20,11 +20,14 @@ import Shipping from "./pages/Shipping";
 import Returns from "./pages/Returns";
 import SizeGuide from "./pages/SizeGuide";
 import FAQ from "./pages/FAQ";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
+import SiteConfig from "./pages/admin/SiteConfig";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +48,8 @@ const App = () => (
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/orders" element={<Orders />} />
                 
                 {/* Static Pages */}
                 <Route path="/about" element={<About />} />
@@ -58,6 +63,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="products" element={<Products />} />
+                  <Route path="site-config" element={<SiteConfig />} />
                   {/* Additional admin routes will be added for other sections */}
                 </Route>
                 

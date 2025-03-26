@@ -64,6 +64,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Special case for admin login
+    if (email.toLowerCase() === 'admin' && password === 'admin123') {
+      const adminUser = MOCK_USERS.find(u => u.role === 'admin');
+      if (adminUser) {
+        const { password: _, ...userWithoutPassword } = adminUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem('xibleUser', JSON.stringify(userWithoutPassword));
+        toast({
+          title: "Admin login successful",
+          description: `Welcome back, ${userWithoutPassword.name}!`,
+        });
+        setLoading(false);
+        return true;
+      }
+    }
+    
+    // Regular user login
     const foundUser = MOCK_USERS.find(
       u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );

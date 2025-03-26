@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AdminSidebar from './AdminSidebar';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, LogOut } from 'lucide-react';
+import { Loader2, ChevronLeft, LogOut, Settings } from 'lucide-react';
 
 const AdminLayout = () => {
   const { isAuthenticated, isAdmin, logout, user, loading } = useAuth();
@@ -63,10 +63,18 @@ const AdminLayout = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            {t ? t('logout') : 'Logout'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/site-config">
+                <Settings className="h-4 w-4 mr-2" />
+                {t ? t('siteSettings') : 'Site Settings'}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              {t ? t('logout') : 'Logout'}
+            </Button>
+          </div>
         </header>
         
         <main className="flex-1 p-6 md:p-8 pt-6 overflow-x-auto">
