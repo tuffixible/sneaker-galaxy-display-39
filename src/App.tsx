@@ -29,11 +29,18 @@ import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import SiteConfig from "./pages/admin/SiteConfig";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
           <TooltipProvider>
@@ -64,7 +71,6 @@ const App = () => (
                   <Route index element={<Dashboard />} />
                   <Route path="products" element={<Products />} />
                   <Route path="site-config" element={<SiteConfig />} />
-                  {/* Additional admin routes will be added for other sections */}
                 </Route>
                 
                 {/* Catch-all route for 404 */}
@@ -74,8 +80,9 @@ const App = () => (
           </TooltipProvider>
         </LanguageProvider>
       </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;
+
