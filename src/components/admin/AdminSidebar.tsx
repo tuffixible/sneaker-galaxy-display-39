@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -94,8 +93,8 @@ const AdminSidebar = () => {
     { name: menuItems.customers, icon: Users, path: '/admin/customers' },
     { name: menuItems.reports, icon: ScrollText, path: '/admin/reports' },
     { name: menuItems.finances, icon: DollarSign, path: '/admin/finances' },
-    { name: menuItems.siteContent, icon: Store, path: '/admin/content' },
-    { name: menuItems.settings, icon: Settings, path: '/admin/settings' }
+    { name: menuItems.siteContent, icon: Store, path: '/admin/site-content' },
+    { name: menuItems.settings, icon: Settings, path: '/admin/site-config' }
   ];
   
   const isActivePath = (path: string) => {

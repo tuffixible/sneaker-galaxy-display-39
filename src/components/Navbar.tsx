@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSelector from './LanguageSelector';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -72,17 +73,17 @@ const Navbar = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {isAdmin && <DropdownMenuItem asChild>
-              <Link to="/admin" className="Admin">{t ? t('navAdmin') : 'Admin'}</Link>
+              <Link to="/admin" className="Admin">Admin</Link>
             </DropdownMenuItem>}
           <DropdownMenuItem asChild>
-            <Link to="/profile">{t ? t('navProfile') : 'Profile'}</Link>
+            <Link to="/profile">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/orders">{t ? t('navOrders') : 'Orders'}</Link>
+            <Link to="/orders">Orders</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>
-            {t ? t('navLogout') : 'Logout'}
+            Logout
           </DropdownMenuItem>
         </>;
     } else {
@@ -100,6 +101,7 @@ const Navbar = () => {
         </>;
     }
   };
+
   return <header className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out-expo py-4 px-6 md:px-8', isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm' : 'bg-transparent')}>
       <div className="container max-w-7xl mx-auto">
         <nav className="flex items-center justify-between">
@@ -179,16 +181,16 @@ const Navbar = () => {
             </Link>
             {isAuthenticated ? <>
                 {isAdmin && <Link to="/admin" className="text-lg font-medium py-2 border-b border-border">
-                    {t ? t('navAdmin') : 'Admin'}
+                    Admin
                   </Link>}
                 <Link to="/profile" className="text-lg font-medium py-2 border-b border-border">
-                  {t ? t('navProfile') : 'Profile'}
+                  Profile
                 </Link>
                 <Link to="/orders" className="text-lg font-medium py-2 border-b border-border">
-                  {t ? t('navOrders') : 'Orders'}
+                  Orders
                 </Link>
                 <button onClick={logout} className="text-lg font-medium py-2 border-b border-border text-left text-red-500">
-                  {t ? t('navLogout') : 'Logout'}
+                  Logout
                 </button>
               </> : <>
                 <Link to="/login" className="text-lg font-medium py-2 border-b border-border">
@@ -203,4 +205,5 @@ const Navbar = () => {
       </div>
     </header>;
 };
+
 export default Navbar;
