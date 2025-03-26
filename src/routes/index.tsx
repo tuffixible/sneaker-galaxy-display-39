@@ -24,7 +24,14 @@ import NotFound from "@/pages/NotFound";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Dashboard from "@/pages/admin/Dashboard";
 import Products from "@/pages/admin/Products";
+import ProductEdit from "@/pages/admin/ProductEdit";
+import AdminOrders from "@/pages/admin/Orders";
+import Customers from "@/pages/admin/Customers";
+import Reports from "@/pages/admin/Reports";
+import Finances from "@/pages/admin/Finances";
+import SiteContent from "@/pages/admin/SiteContent";
 import SiteConfig from "@/pages/admin/SiteConfig";
+import Inventory from "@/pages/admin/Inventory";
 
 export const routes: RouteObject[] = [
   // Public Routes
@@ -99,6 +106,38 @@ export const routes: RouteObject[] = [
       {
         path: "products",
         element: <Products />
+      },
+      {
+        path: "products/edit/:id",
+        element: <ProductEdit />
+      },
+      {
+        path: "products/new",
+        element: <ProductEdit />
+      },
+      {
+        path: "orders",
+        element: <AdminOrders />
+      },
+      {
+        path: "customers",
+        element: <Customers />
+      },
+      {
+        path: "reports",
+        element: <Reports />
+      },
+      {
+        path: "finances",
+        element: <Finances />
+      },
+      {
+        path: "site-content",
+        element: <SiteContent />
+      },
+      {
+        path: "inventory",
+        element: <Inventory />
       },
       {
         path: "site-config",

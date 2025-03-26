@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { products, Product } from '@/data/products';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreHorizontal, Search, Edit, Trash, Eye } from 'lucide-react';
+import { Plus, MoreHorizontal, Search, Edit, Trash, Eye, Package } from 'lucide-react';
 
 const Products = () => {
   const { language } = useLanguage();
@@ -53,7 +54,8 @@ const Products = () => {
             edit: "Editar",
             delete: "Excluir"
           },
-          noProducts: "Nenhum produto encontrado"
+          noProducts: "Nenhum produto encontrado",
+          manageInventory: "Gerenciar Estoque"
         };
       case 'es':
         return {
@@ -78,7 +80,8 @@ const Products = () => {
             edit: "Editar",
             delete: "Eliminar"
           },
-          noProducts: "No se encontraron productos"
+          noProducts: "No se encontraron productos",
+          manageInventory: "Gestionar Inventario"
         };
       default: // 'en'
         return {
@@ -103,7 +106,8 @@ const Products = () => {
             edit: "Edit",
             delete: "Delete"
           },
-          noProducts: "No products found"
+          noProducts: "No products found",
+          manageInventory: "Manage Inventory"
         };
     }
   };
@@ -130,10 +134,20 @@ const Products = () => {
           <h2 className="text-3xl font-bold tracking-tight">{content.title}</h2>
           <p className="text-muted-foreground">{content.description}</p>
         </div>
-        <Button className="w-full md:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          {content.addProduct}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button asChild>
+            <Link to="/admin/inventory">
+              <Package className="mr-2 h-4 w-4" />
+              {content.manageInventory}
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/admin/products/new">
+              <Plus className="mr-2 h-4 w-4" />
+              {content.addProduct}
+            </Link>
+          </Button>
+        </div>
       </div>
       
       <Card>
@@ -193,13 +207,17 @@ const Products = () => {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{content.actions.view}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span>{content.actions.view}</span>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/product/${product.id}`} target="_blank">
+                                <Eye className="mr-2 h-4 w-4" />
+                                <span>{content.actions.view}</span>
+                              </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>{content.actions.edit}</span>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/products/edit/${product.id}`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                <span>{content.actions.edit}</span>
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600">
                               <Trash className="mr-2 h-4 w-4" />
