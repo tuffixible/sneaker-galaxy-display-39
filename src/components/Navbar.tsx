@@ -1,17 +1,27 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import LanguageSelector from './LanguageSelector';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
   // Toggle the mobile menu
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -56,6 +66,50 @@ const Navbar = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  // User menu content based on authentication status
+  const getUserMenuContent = () => {
+    if (isAuthenticated) {
+      return (
+        <>
+          <DropdownMenuLabel>
+            {language === 'pt' ? 'Olá' : language === 'es' ? 'Hola' : 'Hello'}, {user?.name}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {isAdmin && (
+            <DropdownMenuItem asChild>
+              <Link to="/admin">{t ? t('navAdmin') : 'Admin'}</Link>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+            <Link to="/profile">{t ? t('navProfile') : 'Profile'}</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/orders">{t ? t('navOrders') : 'Orders'}</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={logout}>
+            {t ? t('navLogout') : 'Logout'}
+          </DropdownMenuItem>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <DropdownMenuLabel>
+            {t ? t('navAccount') : 'Account'}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link to="/login">{t ? t('navLogin') : 'Login'}</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/register">{t ? t('navRegister') : 'Register'}</Link>
+          </DropdownMenuItem>
+        </>
+      );
+    }
+  };
+
   return (
     <header
       className={cn(
@@ -70,9 +124,16 @@ const Navbar = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            Xible Store
+            <img 
+              src="/logo.svg" 
+              alt="Xible Store" 
+              className="w-10 h-10 object-contain"
+            />
+            <span className="text-2xl font-bold tracking-tight">
+              Xible Store
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -84,7 +145,7 @@ const Navbar = () => {
                 location.pathname === "/" && "text-primary"
               )}
             >
-              {t('navHome')}
+              {t ? t('navHome') : 'Home'}
             </Link>
             <Link 
               to="/catalogo" 
@@ -93,7 +154,7 @@ const Navbar = () => {
                 location.pathname === "/catalogo" && "text-primary"
               )}
             >
-              {t('navCatalog')}
+              {t ? t('navCatalog') : 'Catalog'}
             </Link>
             <Link 
               to="/about" 
@@ -102,7 +163,7 @@ const Navbar = () => {
                 location.pathname === "/about" && "text-primary"
               )}
             >
-              {t('navAbout')}
+              {t ? t('navAbout') : 'About'}
             </Link>
             <Link 
               to="/contact" 
@@ -111,7 +172,7 @@ const Navbar = () => {
                 location.pathname === "/contact" && "text-primary"
               )}
             >
-              {t('navContact')}
+              {t ? t('navContact') : 'Contact'}
             </Link>
           </div>
 
@@ -136,6 +197,21 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+            
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80"
+                  aria-label="User menu"
+                >
+                  <User size={18} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {getUserMenuContent()}
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             <LanguageSelector />
             
@@ -163,26 +239,71 @@ const Navbar = () => {
               to="/" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              {t('navHome')}
+              {t ? t('navHome') : 'Home'}
             </Link>
             <Link 
               to="/catalogo" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              {t('navCatalog')}
+              {t ? t('navCatalog') : 'Catalog'}
             </Link>
             <Link 
               to="/about" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              {t('navAbout')}
+              {t ? t('navAbout') : 'About'}
             </Link>
             <Link 
               to="/contact" 
               className="text-lg font-medium py-2 border-b border-border"
             >
-              {t('navContact')}
+              {t ? t('navContact') : 'Contact'}
             </Link>
+            {isAuthenticated ? (
+              <>
+                {isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    className="text-lg font-medium py-2 border-b border-border"
+                  >
+                    {t ? t('navAdmin') : 'Admin'}
+                  </Link>
+                )}
+                <Link 
+                  to="/profile" 
+                  className="text-lg font-medium py-2 border-b border-border"
+                >
+                  {t ? t('navProfile') : 'Profile'}
+                </Link>
+                <Link 
+                  to="/orders" 
+                  className="text-lg font-medium py-2 border-b border-border"
+                >
+                  {t ? t('navOrders') : 'Orders'}
+                </Link>
+                <button 
+                  onClick={logout}
+                  className="text-lg font-medium py-2 border-b border-border text-left text-red-500"
+                >
+                  {t ? t('navLogout') : 'Logout'}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/login" 
+                  className="text-lg font-medium py-2 border-b border-border"
+                >
+                  {t ? t('navLogin') : 'Login'}
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="text-lg font-medium py-2 border-b border-border"
+                >
+                  {t ? t('navRegister') : 'Register'}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

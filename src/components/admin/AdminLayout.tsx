@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AdminSidebar from './AdminSidebar';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, ChevronLeft, LogOut } from 'lucide-react';
 
 const AdminLayout = () => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const { isAuthenticated, isAdmin, logout, user, loading } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +25,11 @@ const AdminLayout = () => {
       }
     }
   }, [isAuthenticated, isAdmin, loading, navigate]);
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
   
   if (loading || isLoading) {
     return (
@@ -43,6 +49,26 @@ const AdminLayout = () => {
       <AdminSidebar />
       
       <div className="flex flex-col flex-1">
+        <header className="border-b border-border p-4 bg-card flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" asChild>
+              <Link to="/">
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">{t ? t('adminDashboard') : 'Admin Dashboard'}</h1>
+              <p className="text-sm text-muted-foreground">
+                {t ? t('loggedInAs') : 'Logged in as'}: {user?.name} ({user?.email})
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            {t ? t('logout') : 'Logout'}
+          </Button>
+        </header>
+        
         <main className="flex-1 p-6 md:p-8 pt-6 overflow-x-auto">
           <Outlet />
         </main>
