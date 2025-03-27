@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Box, ShoppingBag, Users, Activity, TrendingUp, TrendingDown } from 'lucide-react';
+import { DollarSign, Box, ShoppingBag, Users, Activity, TrendingUp, TrendingDown, QrCode } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const Dashboard = () => {
@@ -37,7 +37,13 @@ const Dashboard = () => {
           processing: "Processando",
           shipped: "Enviado",
           delivered: "Entregue",
-          cancelled: "Cancelado"
+          cancelled: "Cancelado",
+          paymentMethods: "Métodos de Pagamento",
+          creditCard: "Cartão de Crédito",
+          pix: "PIX",
+          bankTransfer: "Transferência Bancária",
+          paypal: "PayPal",
+          cash: "Dinheiro"
         };
       case 'es':
         return {
@@ -65,7 +71,13 @@ const Dashboard = () => {
           processing: "Procesando",
           shipped: "Enviado",
           delivered: "Entregado",
-          cancelled: "Cancelado"
+          cancelled: "Cancelado",
+          paymentMethods: "Métodos de Pago",
+          creditCard: "Tarjeta de Crédito",
+          pix: "PIX",
+          bankTransfer: "Transferencia Bancaria",
+          paypal: "PayPal",
+          cash: "Efectivo"
         };
       default: // 'en'
         return {
@@ -93,7 +105,13 @@ const Dashboard = () => {
           processing: "Processing",
           shipped: "Shipped",
           delivered: "Delivered",
-          cancelled: "Cancelled"
+          cancelled: "Cancelled",
+          paymentMethods: "Payment Methods",
+          creditCard: "Credit Card",
+          pix: "PIX",
+          bankTransfer: "Bank Transfer",
+          paypal: "PayPal",
+          cash: "Cash"
         };
     }
   };
@@ -146,6 +164,15 @@ const Dashboard = () => {
     { status: content.cancelled, count: 7, color: "bg-red-500" }
   ];
   
+  // Payment methods data
+  const paymentMethods = [
+    { method: content.creditCard, count: 87, percentage: 58, color: "bg-blue-500" },
+    { method: content.pix, count: 32, percentage: 21, color: "bg-green-500" },
+    { method: content.paypal, count: 15, percentage: 10, color: "bg-purple-500" },
+    { method: content.bankTransfer, count: 10, percentage: 7, color: "bg-yellow-500" },
+    { method: content.cash, count: 6, percentage: 4, color: "bg-gray-500" }
+  ];
+  
   // Stats cards data
   const stats = [
     {
@@ -184,9 +211,24 @@ const Dashboard = () => {
   
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">{content.title}</h2>
-        <p className="text-muted-foreground">{content.welcome}</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">{content.title}</h2>
+          <p className="text-muted-foreground">{content.welcome}</p>
+        </div>
+        
+        {/* Store logo display */}
+        <div className="flex items-center gap-3 bg-card p-2 rounded-md border">
+          <img 
+            src="/logo.svg" 
+            alt="Store Logo" 
+            className="h-10 w-10"
+          />
+          <div>
+            <p className="font-semibold text-sm">Xible Store</p>
+            <p className="text-xs text-muted-foreground">Premium shoes for everyone</p>
+          </div>
+        </div>
       </div>
       
       {/* Stats cards */}
@@ -291,21 +333,30 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        {/* Inventory Status */}
+        {/* Payment Methods */}
         <Card>
           <CardHeader>
-            <CardTitle>{content.inventoryStatus}</CardTitle>
+            <CardTitle>{content.paymentMethods}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {inventoryStatus.map((status, i) => (
-                <div key={i} className="flex items-center">
-                  <div className={`mr-2 h-2 w-2 rounded-full ${status.color}`} />
-                  <div className="flex-1">
-                    <div className="font-medium">{status.status}</div>
+              {paymentMethods.map((method, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`mr-2 h-2 w-2 rounded-full ${method.color}`} />
+                      <span className="font-medium">{method.method}</span>
+                    </div>
+                    <span className="text-sm">{method.count} orders</span>
                   </div>
-                  <div className="font-medium">
-                    {status.count}
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className={`${method.color} h-2 rounded-full`} 
+                      style={{ width: `${method.percentage}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-right text-muted-foreground">
+                    {method.percentage}%
                   </div>
                 </div>
               ))}

@@ -7,7 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Save, Plus, Trash2, Edit, Image } from "lucide-react";
+import { 
+  Loader2, Save, Plus, Trash2, Edit, Image, Package, 
+  FileText, Images, ShoppingBag
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { products as initialProducts, Product } from '@/data/products';
 
 // Types for content management
 interface PageContent {
@@ -69,7 +84,7 @@ const SiteContent = () => {
     {
       id: '1',
       title: 'Summer Sale',
-      image: '/placeholder.svg',
+      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&h=400',
       url: '/catalogo?sale=summer',
       active: true,
       position: 1
@@ -77,17 +92,41 @@ const SiteContent = () => {
     {
       id: '2',
       title: 'New Collection',
-      image: '/placeholder.svg',
+      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&h=400',
       url: '/catalogo?collection=new',
       active: true,
       position: 2
     }
   ]);
 
-  // Edit state
+  // Products state
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+
+  // Edit states
   const [currentPage, setCurrentPage] = useState<PageContent | null>(null);
   const [currentBanner, setCurrentBanner] = useState<Banner | null>(null);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const [newBanner, setNewBanner] = useState<Omit<Banner, 'id'>>({
+    title: '',
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&h=400',
+    url: '',
+    active: true,
+    position: 3
+  });
+  const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
+    name: '',
+    brand: '',
+    price: 0,
+    colors: [''],
+    sizes: [],
+    images: ['https://images.unsplash.com/photo-1605348532760-6753d2c43329?auto=format&fit=crop&w=800&h=800'],
+    description: '',
+    featured: false
+  });
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddingBanner, setIsAddingBanner] = useState(false);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
 
   // Handle page selection for editing
   const handleEditPage = (page: PageContent) => {
@@ -97,6 +136,11 @@ const SiteContent = () => {
   // Handle banner selection for editing
   const handleEditBanner = (banner: Banner) => {
     setCurrentBanner({...banner});
+  };
+
+  // Handle product selection for editing
+  const handleEditProduct = (product: Product) => {
+    setCurrentProduct({...product});
   };
 
   // Handle saving page changes
@@ -128,6 +172,23 @@ const SiteContent = () => {
       toast({
         title: "Banner updated",
         description: `${currentBanner.title} has been successfully updated.`,
+      });
+      setIsLoading(false);
+    }, 800);
+  };
+
+  // Handle saving product changes
+  const handleSaveProduct = () => {
+    if (!currentProduct) return;
+    
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setProducts(products.map(p => p.id === currentProduct.id ? currentProduct : p));
+      toast({
+        title: "Product updated",
+        description: `${currentProduct.name} has been successfully updated.`,
       });
       setIsLoading(false);
     }, 800);
@@ -180,7 +241,7 @@ const SiteContent = () => {
   };
 
   // Handle banner input changes
-  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!currentBanner) return;
     
     const value = e.target.type === 'checkbox' 
@@ -193,6 +254,144 @@ const SiteContent = () => {
     });
   };
 
+  // Handle new banner input changes
+  const handleNewBannerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const value = e.target.type === 'checkbox' 
+      ? (e.target as HTMLInputElement).checked 
+      : e.target.value;
+      
+    setNewBanner({
+      ...newBanner,
+      [e.target.name]: value
+    });
+  };
+
+  // Handle adding a new banner
+  const handleAddBanner = () => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const newId = (parseInt(banners[banners.length - 1]?.id || '0') + 1).toString();
+      const bannerToAdd = {
+        id: newId,
+        ...newBanner
+      };
+      
+      setBanners([...banners, bannerToAdd]);
+      
+      setNewBanner({
+        title: '',
+        image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&h=400',
+        url: '',
+        active: true,
+        position: banners.length + 1
+      });
+      
+      setIsAddingBanner(false);
+      setIsLoading(false);
+      
+      toast({
+        title: "Banner added",
+        description: `${bannerToAdd.title} has been successfully added.`,
+      });
+    }, 800);
+  };
+
+  // Handle product input changes
+  const handleProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof Product) => {
+    if (!currentProduct) return;
+    
+    let value: any = e.target.value;
+    
+    // Handle number fields
+    if (field === 'price') {
+      value = parseFloat(value);
+    }
+    
+    // Handle checkbox fields
+    if (e.target.type === 'checkbox') {
+      value = (e.target as HTMLInputElement).checked;
+    }
+    
+    setCurrentProduct({
+      ...currentProduct,
+      [field]: value
+    });
+  };
+  
+  // Handle new product input changes
+  const handleNewProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof Omit<Product, 'id'>) => {
+    let value: any = e.target.value;
+    
+    // Handle number fields
+    if (field === 'price') {
+      value = parseFloat(value);
+    }
+    
+    // Handle checkbox fields
+    if (e.target.type === 'checkbox') {
+      value = (e.target as HTMLInputElement).checked;
+    }
+    
+    setNewProduct({
+      ...newProduct,
+      [field]: value
+    });
+  };
+  
+  // Handle adding a new product
+  const handleAddProduct = () => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const newId = (parseInt(products[products.length - 1]?.id || '0') + 1).toString();
+      
+      // Process sizes from comma-separated string if needed
+      let sizes = newProduct.sizes;
+      if (typeof sizes === 'string') {
+        sizes = (sizes as unknown as string).split(',').map(s => parseInt(s.trim()));
+      }
+      
+      // Process colors from comma-separated string if needed
+      let colors = newProduct.colors;
+      if (typeof colors === 'string') {
+        colors = (colors as unknown as string).split(',').map(c => c.trim());
+      }
+      
+      const productToAdd: Product = {
+        id: newId,
+        ...newProduct,
+        sizes: sizes as number[],
+        colors: colors as string[],
+        images: Array.isArray(newProduct.images) ? newProduct.images : [newProduct.images as unknown as string]
+      };
+      
+      setProducts([...products, productToAdd]);
+      
+      // Reset new product form
+      setNewProduct({
+        name: '',
+        brand: '',
+        price: 0,
+        colors: [''],
+        sizes: [],
+        images: ['https://images.unsplash.com/photo-1605348532760-6753d2c43329?auto=format&fit=crop&w=800&h=800'],
+        description: '',
+        featured: false
+      });
+      
+      setIsAddingProduct(false);
+      setIsLoading(false);
+      
+      toast({
+        title: "Product added",
+        description: `${productToAdd.name} has been successfully added.`,
+      });
+    }, 800);
+  };
+
   // Translations based on language
   const getLabels = () => {
     switch(language) {
@@ -201,8 +400,12 @@ const SiteContent = () => {
           title: "Conteúdo do Site",
           pages: "Páginas",
           banners: "Banners",
+          products: "Produtos",
           editPage: "Editar Página",
           editBanner: "Editar Banner",
+          editProduct: "Editar Produto",
+          addBanner: "Adicionar Banner",
+          addProduct: "Adicionar Produto",
           pageTitle: "Título da Página",
           pageSlug: "Slug da Página",
           pageContent: "Conteúdo da Página",
@@ -213,18 +416,37 @@ const SiteContent = () => {
           bannerUrl: "URL do Banner",
           bannerActive: "Ativo",
           bannerPosition: "Posição",
+          productName: "Nome do Produto",
+          productBrand: "Marca",
+          productPrice: "Preço",
+          productColors: "Cores (separadas por vírgula)",
+          productSizes: "Tamanhos (separados por vírgula)",
+          productImages: "Imagens",
+          productDescription: "Descrição",
+          productFeatured: "Em Destaque",
           save: "Salvar",
+          add: "Adicionar",
           cancel: "Cancelar",
           select: "Selecione uma página para editar",
-          selectBanner: "Selecione um banner para editar"
+          selectBanner: "Selecione um banner para editar",
+          selectProduct: "Selecione um produto para editar",
+          changeImage: "Alterar Imagem",
+          previewImage: "Pré-visualização da Imagem",
+          uploadNewImage: "Carregar Nova Imagem",
+          featuredProduct: "Produto em Destaque",
+          notFeaturedProduct: "Produto sem Destaque"
         };
       case 'es':
         return {
           title: "Contenido del Sitio",
           pages: "Páginas",
           banners: "Banners",
+          products: "Productos",
           editPage: "Editar Página",
           editBanner: "Editar Banner",
+          editProduct: "Editar Producto",
+          addBanner: "Añadir Banner",
+          addProduct: "Añadir Producto",
           pageTitle: "Título de la Página",
           pageSlug: "Slug de la Página",
           pageContent: "Contenido de la Página",
@@ -235,18 +457,37 @@ const SiteContent = () => {
           bannerUrl: "URL del Banner",
           bannerActive: "Activo",
           bannerPosition: "Posición",
+          productName: "Nombre del Producto",
+          productBrand: "Marca",
+          productPrice: "Precio",
+          productColors: "Colores (separados por comas)",
+          productSizes: "Tallas (separadas por comas)",
+          productImages: "Imágenes",
+          productDescription: "Descripción",
+          productFeatured: "Destacado",
           save: "Guardar",
+          add: "Añadir",
           cancel: "Cancelar",
           select: "Seleccione una página para editar",
-          selectBanner: "Seleccione un banner para editar"
+          selectBanner: "Seleccione un banner para editar",
+          selectProduct: "Seleccione un producto para editar",
+          changeImage: "Cambiar Imagen",
+          previewImage: "Vista previa de la Imagen",
+          uploadNewImage: "Subir Nueva Imagen",
+          featuredProduct: "Producto Destacado",
+          notFeaturedProduct: "Producto No Destacado"
         };
       default: // 'en'
         return {
           title: "Site Content",
           pages: "Pages",
           banners: "Banners",
+          products: "Products",
           editPage: "Edit Page",
           editBanner: "Edit Banner",
+          editProduct: "Edit Product",
+          addBanner: "Add Banner",
+          addProduct: "Add Product",
           pageTitle: "Page Title",
           pageSlug: "Page Slug",
           pageContent: "Page Content",
@@ -257,10 +498,25 @@ const SiteContent = () => {
           bannerUrl: "Banner URL",
           bannerActive: "Active",
           bannerPosition: "Position",
+          productName: "Product Name",
+          productBrand: "Brand",
+          productPrice: "Price",
+          productColors: "Colors (comma separated)",
+          productSizes: "Sizes (comma separated)",
+          productImages: "Images",
+          productDescription: "Description",
+          productFeatured: "Featured",
           save: "Save",
+          add: "Add",
           cancel: "Cancel",
           select: "Select a page to edit",
-          selectBanner: "Select a banner to edit"
+          selectBanner: "Select a banner to edit",
+          selectProduct: "Select a product to edit",
+          changeImage: "Change Image",
+          previewImage: "Image Preview",
+          uploadNewImage: "Upload New Image",
+          featuredProduct: "Featured Product",
+          notFeaturedProduct: "Not Featured"
         };
     }
   };
@@ -272,14 +528,24 @@ const SiteContent = () => {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{labels.title}</h1>
         <p className="text-muted-foreground">
-          {t ? t('manageYourSiteContent') : 'Manage your website content, pages, and banners'}
+          {t ? t('manageYourSiteContent') : 'Manage your website content, pages, banners and products'}
         </p>
       </div>
 
       <Tabs defaultValue="pages" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pages">{labels.pages}</TabsTrigger>
-          <TabsTrigger value="banners">{labels.banners}</TabsTrigger>
+          <TabsTrigger value="pages" className="flex items-center gap-1">
+            <FileText className="h-4 w-4" />
+            {labels.pages}
+          </TabsTrigger>
+          <TabsTrigger value="banners" className="flex items-center gap-1">
+            <Images className="h-4 w-4" />
+            {labels.banners}
+          </TabsTrigger>
+          <TabsTrigger value="products" className="flex items-center gap-1">
+            <ShoppingBag className="h-4 w-4" />
+            {labels.products}
+          </TabsTrigger>
         </TabsList>
         
         {/* Pages Tab */}
@@ -417,11 +683,134 @@ const SiteContent = () => {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Banners List */}
             <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>{labels.banners}</CardTitle>
-                <CardDescription>
-                  {t ? t('manageBannersAndSliders') : 'Manage your banners and sliders'}
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>{labels.banners}</CardTitle>
+                  <CardDescription>
+                    {t ? t('manageBannersAndSliders') : 'Manage your banners and sliders'}
+                  </CardDescription>
+                </div>
+                <Dialog open={isAddingBanner} onOpenChange={setIsAddingBanner}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      {labels.addBanner}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>{labels.addBanner}</DialogTitle>
+                      <DialogDescription>
+                        {t ? t('addNewBannerToYourSite') : 'Add a new banner to your site.'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="newBannerTitle">{labels.bannerTitle}</Label>
+                        <Input
+                          id="newBannerTitle"
+                          name="title"
+                          value={newBanner.title}
+                          onChange={handleNewBannerChange}
+                          placeholder="e.g. Summer Sale"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newBannerUrl">{labels.bannerUrl}</Label>
+                        <Input
+                          id="newBannerUrl"
+                          name="url"
+                          value={newBanner.url}
+                          onChange={handleNewBannerChange}
+                          placeholder="e.g. /catalogo?sale=summer"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newBannerImage">{labels.bannerImage}</Label>
+                        <div className="border rounded-md p-2">
+                          <img
+                            src={newBanner.image}
+                            alt="Banner Preview"
+                            className="w-full h-32 object-cover rounded-md mb-2"
+                          />
+                          <Input
+                            id="newBannerImage"
+                            name="image"
+                            value={newBanner.image}
+                            onChange={handleNewBannerChange}
+                            placeholder="Image URL"
+                            className="mt-2"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t ? t('enterImageUrlOrUpload') : 'Enter image URL or upload a new image'}
+                          </p>
+                          
+                          <div className="mt-2">
+                            <Label
+                              htmlFor="uploadNewBanner"
+                              className="cursor-pointer inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground ring-offset-background transition-colors hover:bg-secondary/80"
+                            >
+                              <Image className="mr-2 h-4 w-4" />
+                              {labels.uploadNewImage}
+                            </Label>
+                            <Input
+                              id="uploadNewBanner"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="newBannerPosition">{labels.bannerPosition}</Label>
+                          <Input
+                            id="newBannerPosition"
+                            name="position"
+                            type="number"
+                            value={newBanner.position}
+                            onChange={handleNewBannerChange}
+                          />
+                        </div>
+                        <div className="space-y-2 flex items-end">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="newBannerActive"
+                              name="active"
+                              checked={newBanner.active}
+                              onCheckedChange={(checked) => 
+                                setNewBanner({...newBanner, active: checked})
+                              }
+                            />
+                            <Label htmlFor="newBannerActive">{labels.bannerActive}</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddingBanner(false)}>
+                        {labels.cancel}
+                      </Button>
+                      <Button 
+                        onClick={handleAddBanner}
+                        disabled={isLoading || !newBanner.title || !newBanner.image}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Plus className="h-4 w-4 mr-2" />
+                        )}
+                        {labels.add}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -432,7 +821,12 @@ const SiteContent = () => {
                       className="w-full justify-between"
                       onClick={() => handleEditBanner(banner)}
                     >
-                      <span>{banner.title}</span>
+                      <div className="flex items-center">
+                        <div 
+                          className={`h-2 w-2 rounded-full mr-2 ${banner.active ? 'bg-green-500' : 'bg-gray-300'}`}
+                        />
+                        <span>{banner.title}</span>
+                      </div>
                       <Edit className="h-4 w-4" />
                     </Button>
                   ))}
@@ -483,39 +877,45 @@ const SiteContent = () => {
                         />
                       </div>
                       <div className="space-y-2 flex items-end">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="bannerActive"
                             name="active"
-                            checked={currentBanner.active}
-                            onChange={handleBannerChange}
-                            className="w-4 h-4"
+                            checked={typeof currentBanner.active === 'boolean' ? currentBanner.active : currentBanner.active === 'true'}
+                            onCheckedChange={(checked) => 
+                              setCurrentBanner({...currentBanner, active: checked})
+                            }
                           />
-                          <span>{labels.bannerActive}</span>
-                        </label>
+                          <Label htmlFor="bannerActive">{labels.bannerActive}</Label>
+                        </div>
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <label htmlFor="bannerImage">{labels.bannerImage}</label>
                       <div className="border rounded-md p-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="relative h-32 w-32 overflow-hidden rounded-md border bg-muted">
-                            <img
-                              src={currentBanner.image}
-                              alt={currentBanner.title}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Button variant="outline" size="sm">
-                              <Image className="mr-2 h-4 w-4" />
-                              {t ? t('changeBannerImage') : 'Change Image'}
-                            </Button>
-                            <p className="text-xs text-muted-foreground">
-                              {t ? t('recommendedSize') : 'Recommended size: 1200x400px'}
-                            </p>
-                          </div>
+                        <div className="w-full h-40 mb-4 overflow-hidden rounded-md border bg-muted">
+                          <img
+                            src={currentBanner.image}
+                            alt={currentBanner.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <Input
+                            id="bannerImage"
+                            name="image"
+                            value={currentBanner.image}
+                            onChange={handleBannerChange}
+                            placeholder="Image URL"
+                          />
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                            <Image className="mr-2 h-4 w-4" />
+                            {labels.changeImage}
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            {t ? t('recommendedSize') : 'Recommended size: 1200x400px'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -548,6 +948,345 @@ const SiteContent = () => {
                 ) : (
                   <div className="flex h-[400px] items-center justify-center border rounded-md">
                     <p className="text-muted-foreground">{labels.selectBanner}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Products Tab */}
+        <TabsContent value="products" className="space-y-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Products List */}
+            <Card className="col-span-1">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>{labels.products}</CardTitle>
+                  <CardDescription>
+                    {t ? t('manageYourProducts') : 'Manage your product catalog'}
+                  </CardDescription>
+                </div>
+                <Dialog open={isAddingProduct} onOpenChange={setIsAddingProduct}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      {labels.addProduct}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>{labels.addProduct}</DialogTitle>
+                      <DialogDescription>
+                        {t ? t('addNewProductToYourCatalog') : 'Add a new product to your catalog.'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="newProductName">{labels.productName}</Label>
+                          <Input
+                            id="newProductName"
+                            value={newProduct.name}
+                            onChange={(e) => handleNewProductChange(e, 'name')}
+                            placeholder="e.g. Air Max Pulse"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="newProductBrand">{labels.productBrand}</Label>
+                          <Input
+                            id="newProductBrand"
+                            value={newProduct.brand}
+                            onChange={(e) => handleNewProductChange(e, 'brand')}
+                            placeholder="e.g. Nike"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="newProductPrice">{labels.productPrice}</Label>
+                          <Input
+                            id="newProductPrice"
+                            type="number"
+                            step="0.01"
+                            value={newProduct.price}
+                            onChange={(e) => handleNewProductChange(e, 'price')}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="newProductFeatured">{labels.productFeatured}</Label>
+                          <div className="flex items-center h-9 space-x-2">
+                            <Switch
+                              id="newProductFeatured"
+                              checked={newProduct.featured}
+                              onCheckedChange={(checked) => 
+                                setNewProduct({...newProduct, featured: checked})
+                              }
+                            />
+                            <Label htmlFor="newProductFeatured">
+                              {newProduct.featured ? labels.featuredProduct : labels.notFeaturedProduct}
+                            </Label>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newProductColors">{labels.productColors}</Label>
+                        <Input
+                          id="newProductColors"
+                          value={Array.isArray(newProduct.colors) ? newProduct.colors.join(', ') : newProduct.colors}
+                          onChange={(e) => handleNewProductChange(e, 'colors')}
+                          placeholder="e.g. Black/Anthracite, White/Volt, Grey/Red"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newProductSizes">{labels.productSizes}</Label>
+                        <Input
+                          id="newProductSizes"
+                          value={Array.isArray(newProduct.sizes) ? newProduct.sizes.join(', ') : newProduct.sizes}
+                          onChange={(e) => handleNewProductChange(e, 'sizes')}
+                          placeholder="e.g. 38, 39, 40, 41, 42, 43, 44, 45"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newProductDescription">{labels.productDescription}</Label>
+                        <Textarea
+                          id="newProductDescription"
+                          rows={4}
+                          value={newProduct.description}
+                          onChange={(e) => handleNewProductChange(e, 'description')}
+                          placeholder="Product description..."
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="newProductImage">{labels.productImages}</Label>
+                        <div className="border rounded-md p-2">
+                          <img
+                            src={Array.isArray(newProduct.images) ? newProduct.images[0] : newProduct.images}
+                            alt="Product Preview"
+                            className="w-full h-48 object-contain rounded-md mb-2"
+                          />
+                          <Input
+                            id="newProductImage"
+                            value={Array.isArray(newProduct.images) ? newProduct.images[0] : newProduct.images}
+                            onChange={(e) => setNewProduct({...newProduct, images: [e.target.value]})}
+                            placeholder="Image URL"
+                            className="mt-2"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t ? t('enterImageUrlOrUpload') : 'Enter image URL or upload a new image'}
+                          </p>
+                          
+                          <div className="mt-2">
+                            <Label
+                              htmlFor="uploadNewProductImage"
+                              className="cursor-pointer inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground ring-offset-background transition-colors hover:bg-secondary/80"
+                            >
+                              <Image className="mr-2 h-4 w-4" />
+                              {labels.uploadNewImage}
+                            </Label>
+                            <Input
+                              id="uploadNewProductImage"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddingProduct(false)}>
+                        {labels.cancel}
+                      </Button>
+                      <Button 
+                        onClick={handleAddProduct}
+                        disabled={isLoading || !newProduct.name || !newProduct.brand || newProduct.price <= 0}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Plus className="h-4 w-4 mr-2" />
+                        )}
+                        {labels.add}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                  {products.map(product => (
+                    <Button
+                      key={product.id}
+                      variant={currentProduct?.id === product.id ? "default" : "outline"}
+                      className="w-full justify-between"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      <div className="flex items-center text-left">
+                        <div 
+                          className={`h-2 w-2 rounded-full mr-2 ${product.featured ? 'bg-green-500' : 'bg-gray-300'}`}
+                        />
+                        <div>
+                          <span className="block">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{product.brand} | ${product.price}</span>
+                        </div>
+                      </div>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Editor */}
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle>{labels.editProduct}</CardTitle>
+                <CardDescription>
+                  {currentProduct ? `Editing: ${currentProduct.name}` : labels.selectProduct}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {currentProduct ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="productName">{labels.productName}</Label>
+                        <Input
+                          id="productName"
+                          value={currentProduct.name}
+                          onChange={(e) => handleProductChange(e, 'name')}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="productBrand">{labels.productBrand}</Label>
+                        <Input
+                          id="productBrand"
+                          value={currentProduct.brand}
+                          onChange={(e) => handleProductChange(e, 'brand')}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="productPrice">{labels.productPrice}</Label>
+                        <Input
+                          id="productPrice"
+                          type="number"
+                          step="0.01"
+                          value={currentProduct.price}
+                          onChange={(e) => handleProductChange(e, 'price')}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="productFeatured">{labels.productFeatured}</Label>
+                        <div className="flex items-center h-9 space-x-2">
+                          <Switch
+                            id="productFeatured"
+                            checked={currentProduct.featured || false}
+                            onCheckedChange={(checked) => 
+                              setCurrentProduct({...currentProduct, featured: checked})
+                            }
+                          />
+                          <Label htmlFor="productFeatured">
+                            {currentProduct.featured ? labels.featuredProduct : labels.notFeaturedProduct}
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="productColors">{labels.productColors}</Label>
+                      <Input
+                        id="productColors"
+                        value={Array.isArray(currentProduct.colors) ? currentProduct.colors.join(', ') : currentProduct.colors}
+                        onChange={(e) => handleProductChange(e, 'colors')}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="productSizes">{labels.productSizes}</Label>
+                      <Input
+                        id="productSizes"
+                        value={Array.isArray(currentProduct.sizes) ? currentProduct.sizes.join(', ') : currentProduct.sizes}
+                        onChange={(e) => handleProductChange(e, 'sizes')}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="productDescription">{labels.productDescription}</Label>
+                      <Textarea
+                        id="productDescription"
+                        rows={4}
+                        value={currentProduct.description}
+                        onChange={(e) => handleProductChange(e, 'description')}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="productImage">{labels.productImages}</Label>
+                      <div className="border rounded-md p-4">
+                        <div className="w-full h-64 mb-4 overflow-hidden rounded-md border bg-muted">
+                          <img
+                            src={Array.isArray(currentProduct.images) ? currentProduct.images[0] : ''}
+                            alt={currentProduct.name}
+                            className="h-full w-full object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <Input
+                            id="productImage"
+                            value={Array.isArray(currentProduct.images) ? currentProduct.images[0] : ''}
+                            onChange={(e) => setCurrentProduct({...currentProduct, images: [e.target.value]})}
+                            placeholder="Image URL"
+                          />
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                            <Image className="mr-2 h-4 w-4" />
+                            {labels.changeImage}
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            {t ? t('recommendedProductImageSize') : 'Recommended size: 800x800px'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setCurrentProduct(null)}
+                      >
+                        {labels.cancel}
+                      </Button>
+                      <Button 
+                        onClick={handleSaveProduct}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t ? t('saving') : 'Saving...'}
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4" />
+                            {labels.save}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-[400px] items-center justify-center border rounded-md">
+                    <p className="text-muted-foreground">{labels.selectProduct}</p>
                   </div>
                 )}
               </CardContent>
