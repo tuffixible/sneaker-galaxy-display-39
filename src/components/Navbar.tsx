@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Search, ShoppingBag, User } from 'lucide-react';
@@ -11,6 +12,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [cartItems, setCartItems] = useState<number>(0);
+  const [storeLogo, setStoreLogo] = useState('/logo.svg');
+  const [storeName, setStoreName] = useState('Xible Store');
   const location = useLocation();
   const {
     t,
@@ -25,6 +28,36 @@ const Navbar = () => {
 
   // Toggle the mobile menu
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Load store settings
+  useEffect(() => {
+    const loadSettings = () => {
+      const savedSettings = localStorage.getItem('storeSettings');
+      if (savedSettings) {
+        const parsedSettings = JSON.parse(savedSettings);
+        if (parsedSettings.logo) {
+          setStoreLogo(parsedSettings.logo);
+        }
+        if (parsedSettings.name) {
+          setStoreName(parsedSettings.name);
+        }
+      }
+    };
+    
+    // Initial load
+    loadSettings();
+    
+    // Listen for settings updates
+    const handleSettingsUpdate = () => {
+      loadSettings();
+    };
+    
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
 
   // Handle scrolling effect
   useEffect(() => {
@@ -107,9 +140,9 @@ const Navbar = () => {
         <nav className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img src="/logo.svg" alt="Xible Store" className="w-10 h-10 object-contain" />
+            <img src={storeLogo} alt={storeName} className="w-10 h-10 object-contain" />
             <span className="text-2xl font-bold tracking-tight">
-              Xible Store
+              {storeName}
             </span>
           </Link>
 

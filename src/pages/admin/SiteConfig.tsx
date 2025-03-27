@@ -1,333 +1,224 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Image as ImageIcon, CreditCard, QrCode } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { Upload, Image as ImageIcon, Globe, Store, Palette, Mail, MapPin, Phone } from 'lucide-react';
 
 const SiteConfig = () => {
   const { language } = useLanguage();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   
-  // Site settings state
-  const [settings, setSettings] = useState({
-    general: {
-      storeName: "Xible Store",
-      storeDescription: "Premium shoes for everyone",
-      storeLogo: "/logo.svg",
-      favicon: "/favicon.ico",
-      primaryColor: "#8B5CF6",
-      secondaryColor: "#7E69AB",
-      currency: "USD",
-      currencySymbol: "$"
-    },
-    location: {
-      country: "United States",
-      timezone: "America/New_York",
-      dateFormat: "MM/DD/YYYY",
-      timeFormat: "12h"
-    },
-    payment: {
-      creditCard: true,
-      paypal: true,
-      applePay: false,
-      googlePay: false,
-      pix: false,
-      bankTransfer: false
-    },
-    email: {
-      fromEmail: "no-reply@xiblestore.com",
-      contactEmail: "contact@xiblestore.com",
-      emailFooter: "© 2023 Xible Store. All rights reserved.",
-      smtpHost: "smtp.example.com",
-      smtpPort: "587",
-      smtpUser: "user@example.com",
-      smtpPassword: "********"
-    }
+  // State for store settings
+  const [storeSettings, setStoreSettings] = useState({
+    name: 'Xible Store',
+    tagline: 'Premium shoes for everyone',
+    description: 'The best selection of sneakers from top brands.',
+    logo: '/logo.svg',
+    favicon: '/logo.svg',
+    email: 'contact@xiblestore.com',
+    phone: '+1 (555) 123-4567',
+    address: '123 Sneaker Street, Footwear City, FC 12345',
+    currency: 'USD'
   });
   
-  // Logo and favicon file states
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [faviconFile, setFaviconFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string>(settings.general.storeLogo);
-  const [faviconPreview, setFaviconPreview] = useState<string>(settings.general.favicon);
+  // State for social media links
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: 'https://instagram.com/xiblestore',
+    facebook: 'https://facebook.com/xiblestore',
+    twitter: 'https://twitter.com/xiblestore',
+    youtube: '',
+    tiktok: ''
+  });
   
-  // Content based on language
+  // State for SEO settings
+  const [seoSettings, setSeoSettings] = useState({
+    title: 'Xible Store | Premium Sneakers',
+    description: 'Shop the latest and greatest sneakers from top brands at Xible Store.',
+    keywords: 'sneakers, shoes, footwear, nike, adidas, jordan, new balance, puma'
+  });
+  
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedStoreSettings = localStorage.getItem('storeSettings');
+    const savedSocialLinks = localStorage.getItem('socialLinks');
+    const savedSeoSettings = localStorage.getItem('seoSettings');
+    
+    if (savedStoreSettings) setStoreSettings(JSON.parse(savedStoreSettings));
+    if (savedSocialLinks) setSocialLinks(JSON.parse(savedSocialLinks));
+    if (savedSeoSettings) setSeoSettings(JSON.parse(savedSeoSettings));
+  }, []);
+  
+  // Handle store settings changes
+  const handleStoreSettingChange = (e) => {
+    const { name, value } = e.target;
+    setStoreSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Handle social media changes
+  const handleSocialLinkChange = (e) => {
+    const { name, value } = e.target;
+    setSocialLinks(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Handle SEO settings changes
+  const handleSeoSettingChange = (e) => {
+    const { name, value } = e.target;
+    setSeoSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Function to handle file uploads (logo and favicon)
+  const handleFileUpload = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setStoreSettings(prev => ({
+          ...prev,
+          [fieldName]: reader.result
+        }));
+        
+        // Trigger a custom event to notify App.tsx of the change
+        const updateEvent = new CustomEvent('storeSettingsUpdated', {
+          detail: {
+            field: fieldName,
+            value: reader.result
+          }
+        });
+        window.dispatchEvent(updateEvent);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  // Save all settings
+  const saveSettings = () => {
+    localStorage.setItem('storeSettings', JSON.stringify(storeSettings));
+    localStorage.setItem('socialLinks', JSON.stringify(socialLinks));
+    localStorage.setItem('seoSettings', JSON.stringify(seoSettings));
+    
+    // Dispatch an event to notify App.tsx about the updated settings
+    const updateEvent = new CustomEvent('storeSettingsUpdated', {
+      detail: { type: 'all' }
+    });
+    window.dispatchEvent(updateEvent);
+    
+    toast.success(
+      language === 'pt' ? 'Configurações salvas com sucesso!' : 
+      language === 'es' ? '¡Configuración guardada correctamente!' : 
+      'Settings saved successfully!'
+    );
+  };
+  
   const getContent = () => {
     switch(language) {
       case 'pt':
         return {
-          title: "Configurações do Site",
+          title: "Configurações da Loja",
           description: "Gerencie as configurações da sua loja",
-          tabs: {
-            general: "Geral",
-            location: "Localização",
-            payment: "Pagamento",
-            email: "Email",
-            security: "Segurança",
-            users: "Usuários"
-          },
-          general: {
-            title: "Configurações Gerais",
-            description: "Configurações básicas da loja",
-            storeName: "Nome da Loja",
-            storeDescription: "Descrição da Loja",
-            storeLogo: "Logo da Loja",
-            favicon: "Favicon",
-            changeImage: "Alterar Imagem",
-            colors: "Cores",
-            primaryColor: "Cor Primária",
-            secondaryColor: "Cor Secundária",
-            currency: "Moeda",
-            currencySymbol: "Símbolo da Moeda"
-          },
-          location: {
-            title: "Configurações de Localização",
-            description: "Definir país, fuso horário e formatos",
-            country: "País",
-            timezone: "Fuso Horário",
-            dateFormat: "Formato de Data",
-            timeFormat: "Formato de Hora"
-          },
-          payment: {
-            title: "Métodos de Pagamento",
-            description: "Configurar métodos de pagamento aceitos",
-            creditCard: "Cartão de Crédito",
-            paypal: "PayPal",
-            applePay: "Apple Pay",
-            googlePay: "Google Pay",
-            pix: "PIX",
-            bankTransfer: "Transferência Bancária"
-          },
-          email: {
-            title: "Configurações de Email",
-            description: "Configurar emails da loja",
-            fromEmail: "Email de Envio",
-            contactEmail: "Email de Contato",
-            emailFooter: "Rodapé do Email",
-            smtpSettings: "Configurações SMTP",
-            smtpHost: "Servidor SMTP",
-            smtpPort: "Porta SMTP",
-            smtpUser: "Usuário SMTP",
-            smtpPassword: "Senha SMTP"
-          },
-          save: "Salvar Alterações",
-          saving: "Salvando...",
-          saved: "Configurações salvas com sucesso!"
+          generalTab: "Geral",
+          socialTab: "Redes Sociais",
+          seoTab: "SEO",
+          storeName: "Nome da Loja",
+          storeTagline: "Slogan",
+          storeDescription: "Descrição",
+          storeLogo: "Logo",
+          storeFavicon: "Favicon",
+          storeEmail: "E-mail",
+          storePhone: "Telefone",
+          storeAddress: "Endereço",
+          currency: "Moeda",
+          selectLogo: "Selecionar Logo",
+          selectFavicon: "Selecionar Favicon",
+          instagram: "Instagram",
+          facebook: "Facebook", 
+          twitter: "Twitter",
+          youtube: "YouTube",
+          tiktok: "TikTok",
+          seoTitle: "Título SEO",
+          seoDescription: "Descrição SEO",
+          seoKeywords: "Palavras-chave",
+          saveChanges: "Salvar Alterações",
+          urlPlaceholder: "URL do perfil",
+          dimensions: "Dimensões recomendadas"
         };
       case 'es':
         return {
-          title: "Configuración del Sitio",
+          title: "Configuración de la Tienda",
           description: "Administre la configuración de su tienda",
-          tabs: {
-            general: "General",
-            location: "Ubicación",
-            payment: "Pago",
-            email: "Correo Electrónico",
-            security: "Seguridad",
-            users: "Usuarios"
-          },
-          general: {
-            title: "Configuración General",
-            description: "Configuración básica de la tienda",
-            storeName: "Nombre de la Tienda",
-            storeDescription: "Descripción de la Tienda",
-            storeLogo: "Logo de la Tienda",
-            favicon: "Favicon",
-            changeImage: "Cambiar Imagen",
-            colors: "Colores",
-            primaryColor: "Color Primario",
-            secondaryColor: "Color Secundario",
-            currency: "Moneda",
-            currencySymbol: "Símbolo de Moneda"
-          },
-          location: {
-            title: "Configuración de Ubicación",
-            description: "Establecer país, zona horaria y formatos",
-            country: "País",
-            timezone: "Zona Horaria",
-            dateFormat: "Formato de Fecha",
-            timeFormat: "Formato de Hora"
-          },
-          payment: {
-            title: "Métodos de Pago",
-            description: "Configurar métodos de pago aceptados",
-            creditCard: "Tarjeta de Crédito",
-            paypal: "PayPal",
-            applePay: "Apple Pay",
-            googlePay: "Google Pay",
-            pix: "PIX",
-            bankTransfer: "Transferencia Bancaria"
-          },
-          email: {
-            title: "Configuración de Correo Electrónico",
-            description: "Configurar correos electrónicos de la tienda",
-            fromEmail: "Correo de Envío",
-            contactEmail: "Correo de Contacto",
-            emailFooter: "Pie de Correo",
-            smtpSettings: "Configuración SMTP",
-            smtpHost: "Servidor SMTP",
-            smtpPort: "Puerto SMTP",
-            smtpUser: "Usuario SMTP",
-            smtpPassword: "Contraseña SMTP"
-          },
-          save: "Guardar Cambios",
-          saving: "Guardando...",
-          saved: "¡Configuración guardada con éxito!"
+          generalTab: "General",
+          socialTab: "Redes Sociales",
+          seoTab: "SEO",
+          storeName: "Nombre de la Tienda",
+          storeTagline: "Eslogan",
+          storeDescription: "Descripción",
+          storeLogo: "Logo",
+          storeFavicon: "Favicon",
+          storeEmail: "Correo Electrónico",
+          storePhone: "Teléfono",
+          storeAddress: "Dirección",
+          currency: "Moneda",
+          selectLogo: "Seleccionar Logo",
+          selectFavicon: "Seleccionar Favicon",
+          instagram: "Instagram",
+          facebook: "Facebook", 
+          twitter: "Twitter",
+          youtube: "YouTube",
+          tiktok: "TikTok",
+          seoTitle: "Título SEO",
+          seoDescription: "Descripción SEO",
+          seoKeywords: "Palabras Clave",
+          saveChanges: "Guardar Cambios",
+          urlPlaceholder: "URL del perfil",
+          dimensions: "Dimensiones recomendadas"
         };
       default: // 'en'
         return {
-          title: "Site Configuration",
+          title: "Store Settings",
           description: "Manage your store settings",
-          tabs: {
-            general: "General",
-            location: "Location",
-            payment: "Payment",
-            email: "Email",
-            security: "Security",
-            users: "Users"
-          },
-          general: {
-            title: "General Settings",
-            description: "Basic store settings",
-            storeName: "Store Name",
-            storeDescription: "Store Description",
-            storeLogo: "Store Logo",
-            favicon: "Favicon",
-            changeImage: "Change Image",
-            colors: "Colors",
-            primaryColor: "Primary Color",
-            secondaryColor: "Secondary Color",
-            currency: "Currency",
-            currencySymbol: "Currency Symbol"
-          },
-          location: {
-            title: "Location Settings",
-            description: "Set country, timezone and formats",
-            country: "Country",
-            timezone: "Timezone",
-            dateFormat: "Date Format",
-            timeFormat: "Time Format"
-          },
-          payment: {
-            title: "Payment Methods",
-            description: "Configure accepted payment methods",
-            creditCard: "Credit Card",
-            paypal: "PayPal",
-            applePay: "Apple Pay",
-            googlePay: "Google Pay",
-            pix: "PIX",
-            bankTransfer: "Bank Transfer"
-          },
-          email: {
-            title: "Email Settings",
-            description: "Configure store emails",
-            fromEmail: "From Email",
-            contactEmail: "Contact Email",
-            emailFooter: "Email Footer",
-            smtpSettings: "SMTP Settings",
-            smtpHost: "SMTP Host",
-            smtpPort: "SMTP Port",
-            smtpUser: "SMTP User",
-            smtpPassword: "SMTP Password"
-          },
-          save: "Save Changes",
-          saving: "Saving...",
-          saved: "Settings saved successfully!"
+          generalTab: "General",
+          socialTab: "Social Media",
+          seoTab: "SEO",
+          storeName: "Store Name",
+          storeTagline: "Tagline",
+          storeDescription: "Description",
+          storeLogo: "Logo",
+          storeFavicon: "Favicon",
+          storeEmail: "Email",
+          storePhone: "Phone",
+          storeAddress: "Address",
+          currency: "Currency",
+          selectLogo: "Select Logo",
+          selectFavicon: "Select Favicon",
+          instagram: "Instagram",
+          facebook: "Facebook", 
+          twitter: "Twitter",
+          youtube: "YouTube",
+          tiktok: "TikTok",
+          seoTitle: "SEO Title",
+          seoDescription: "SEO Description",
+          seoKeywords: "Keywords",
+          saveChanges: "Save Changes",
+          urlPlaceholder: "Profile URL",
+          dimensions: "Recommended dimensions"
         };
     }
   };
   
   const content = getContent();
-  
-  // Handle input changes
-  const handleChange = (section: string, field: string, value: string | boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [field]: value
-      }
-    }));
-  };
-  
-  // Handle logo file selection
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLogoFile(file);
-      
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  // Handle favicon file selection
-  const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFaviconFile(file);
-      
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFaviconPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  // Save settings
-  const handleSave = () => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Here you would upload files and save settings to backend
-      // For now we're just showing a success toast
-      
-      // Update settings with new file paths (in a real app, this would come from your backend)
-      if (logoFile) {
-        // In a real app, this would be the URL returned from your file upload
-        setSettings(prev => ({
-          ...prev,
-          general: {
-            ...prev.general,
-            storeLogo: logoPreview
-          }
-        }));
-      }
-      
-      if (faviconFile) {
-        // In a real app, this would be the URL returned from your file upload
-        setSettings(prev => ({
-          ...prev,
-          general: {
-            ...prev.general,
-            favicon: faviconPreview
-          }
-        }));
-      }
-      
-      toast({
-        title: content.saved,
-        description: new Date().toLocaleTimeString(),
-      });
-      
-      setIsLoading(false);
-    }, 1500);
-  };
   
   return (
     <div className="space-y-6">
@@ -337,500 +228,287 @@ const SiteConfig = () => {
       </div>
       
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 h-auto">
-          <TabsTrigger value="general">{content.tabs.general}</TabsTrigger>
-          <TabsTrigger value="location">{content.tabs.location}</TabsTrigger>
-          <TabsTrigger value="payment">{content.tabs.payment}</TabsTrigger>
-          <TabsTrigger value="email">{content.tabs.email}</TabsTrigger>
-          <TabsTrigger value="security">{content.tabs.security}</TabsTrigger>
-          <TabsTrigger value="users">{content.tabs.users}</TabsTrigger>
+        <TabsList>
+          <TabsTrigger value="general">{content.generalTab}</TabsTrigger>
+          <TabsTrigger value="social">{content.socialTab}</TabsTrigger>
+          <TabsTrigger value="seo">{content.seoTab}</TabsTrigger>
         </TabsList>
         
-        {/* General Settings Tab */}
+        {/* General Settings */}
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{content.general.title}</CardTitle>
-              <CardDescription>{content.general.description}</CardDescription>
+              <CardTitle><Store className="h-4 w-4 inline mr-2" />{content.generalTab}</CardTitle>
+              <CardDescription>{content.description}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="storeName">{content.general.storeName}</Label>
+                  <Label htmlFor="name">{content.storeName}</Label>
                   <Input 
-                    id="storeName" 
-                    value={settings.general.storeName} 
-                    onChange={(e) => handleChange('general', 'storeName', e.target.value)}
+                    id="name" 
+                    name="name" 
+                    value={storeSettings.name} 
+                    onChange={handleStoreSettingChange} 
                   />
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="storeDescription">{content.general.storeDescription}</Label>
+                  <Label htmlFor="tagline">{content.storeTagline}</Label>
                   <Input 
-                    id="storeDescription" 
-                    value={settings.general.storeDescription} 
-                    onChange={(e) => handleChange('general', 'storeDescription', e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid gap-8 md:grid-cols-2">
-                {/* Store Logo */}
-                <div className="space-y-3">
-                  <Label>{content.general.storeLogo}</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="h-24 w-24 rounded-md border overflow-hidden bg-background">
-                      <img 
-                        src={logoPreview} 
-                        alt="Store Logo" 
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                    <div>
-                      <Label 
-                        htmlFor="logoUpload" 
-                        className="cursor-pointer inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90"
-                      >
-                        <ImageIcon className="mr-2 h-4 w-4" />
-                        {content.general.changeImage}
-                      </Label>
-                      <Input 
-                        id="logoUpload" 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleLogoChange}
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Recommended: 200x200px SVG, PNG or JPEG
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Favicon */}
-                <div className="space-y-3">
-                  <Label>{content.general.favicon}</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-md border overflow-hidden bg-background p-1">
-                      <img 
-                        src={faviconPreview} 
-                        alt="Favicon" 
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                    <div>
-                      <Label 
-                        htmlFor="faviconUpload" 
-                        className="cursor-pointer inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90"
-                      >
-                        <ImageIcon className="mr-2 h-4 w-4" />
-                        {content.general.changeImage}
-                      </Label>
-                      <Input 
-                        id="faviconUpload" 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleFaviconChange}
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Recommended: 32x32px ICO, PNG
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-4">{content.general.colors}</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryColor">{content.general.primaryColor}</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        id="primaryColor" 
-                        value={settings.general.primaryColor} 
-                        onChange={(e) => handleChange('general', 'primaryColor', e.target.value)}
-                      />
-                      <Input 
-                        type="color" 
-                        value={settings.general.primaryColor}
-                        onChange={(e) => handleChange('general', 'primaryColor', e.target.value)}
-                        className="w-12 h-9 p-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="secondaryColor">{content.general.secondaryColor}</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        id="secondaryColor" 
-                        value={settings.general.secondaryColor} 
-                        onChange={(e) => handleChange('general', 'secondaryColor', e.target.value)}
-                      />
-                      <Input 
-                        type="color" 
-                        value={settings.general.secondaryColor}
-                        onChange={(e) => handleChange('general', 'secondaryColor', e.target.value)}
-                        className="w-12 h-9 p-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="currency">{content.general.currency}</Label>
-                  <Select
-                    value={settings.general.currency}
-                    onValueChange={(value) => handleChange('general', 'currency', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">US Dollar (USD)</SelectItem>
-                      <SelectItem value="EUR">Euro (EUR)</SelectItem>
-                      <SelectItem value="GBP">British Pound (GBP)</SelectItem>
-                      <SelectItem value="JPY">Japanese Yen (JPY)</SelectItem>
-                      <SelectItem value="BRL">Brazilian Real (BRL)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="currencySymbol">{content.general.currencySymbol}</Label>
-                  <Input 
-                    id="currencySymbol" 
-                    value={settings.general.currencySymbol} 
-                    onChange={(e) => handleChange('general', 'currencySymbol', e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Location Settings Tab */}
-        <TabsContent value="location" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{content.location.title}</CardTitle>
-              <CardDescription>{content.location.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="country">{content.location.country}</Label>
-                  <Select
-                    value={settings.location.country}
-                    onValueChange={(value) => handleChange('location', 'country', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="United States">United States</SelectItem>
-                      <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                      <SelectItem value="Canada">Canada</SelectItem>
-                      <SelectItem value="Australia">Australia</SelectItem>
-                      <SelectItem value="Germany">Germany</SelectItem>
-                      <SelectItem value="France">France</SelectItem>
-                      <SelectItem value="Brazil">Brazil</SelectItem>
-                      <SelectItem value="Japan">Japan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">{content.location.timezone}</Label>
-                  <Select
-                    value={settings.location.timezone}
-                    onValueChange={(value) => handleChange('location', 'timezone', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                      <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                      <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                      <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                      <SelectItem value="Europe/London">Greenwich Mean Time (GMT)</SelectItem>
-                      <SelectItem value="Europe/Paris">Central European Time (CET)</SelectItem>
-                      <SelectItem value="Asia/Tokyo">Japan Standard Time (JST)</SelectItem>
-                      <SelectItem value="Australia/Sydney">Australian Eastern Time (AET)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="dateFormat">{content.location.dateFormat}</Label>
-                  <Select
-                    value={settings.location.dateFormat}
-                    onValueChange={(value) => handleChange('location', 'dateFormat', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select date format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                      <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                      <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                      <SelectItem value="MMM DD, YYYY">MMM DD, YYYY</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timeFormat">{content.location.timeFormat}</Label>
-                  <Select
-                    value={settings.location.timeFormat}
-                    onValueChange={(value) => handleChange('location', 'timeFormat', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select time format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
-                      <SelectItem value="24h">24-hour</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Payment Methods Tab */}
-        <TabsContent value="payment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{content.payment.title}</CardTitle>
-              <CardDescription>{content.payment.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">{content.payment.creditCard}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.creditCard}
-                    onCheckedChange={(value) => handleChange('payment', 'creditCard', value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6.5 7h11M9 10.5h6M11 14h2M7 18.5h10a2 2 0 002-2v-11a2 2 0 00-2-2H7a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <p className="font-medium">{content.payment.paypal}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.paypal}
-                    onCheckedChange={(value) => handleChange('payment', 'paypal', value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                      <path d="M17.5 12c0-3.04-2.46-5.5-5.5-5.5s-5.5 2.46-5.5 5.5H8a4 4 0 014-4v1.5l3-3-3-3v1.5a5.5 5.5 0 00-5.5 5.5" />
-                    </svg>
-                    <div>
-                      <p className="font-medium">{content.payment.applePay}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.applePay}
-                    onCheckedChange={(value) => handleChange('payment', 'applePay', value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <div>
-                      <p className="font-medium">{content.payment.googlePay}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.googlePay}
-                    onCheckedChange={(value) => handleChange('payment', 'googlePay', value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <QrCode className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">{content.payment.pix}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.pix}
-                    onCheckedChange={(value) => handleChange('payment', 'pix', value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between border p-4 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M16 6l-8 6 8 6V6z" />
-                    </svg>
-                    <div>
-                      <p className="font-medium">{content.payment.bankTransfer}</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.payment.bankTransfer}
-                    onCheckedChange={(value) => handleChange('payment', 'bankTransfer', value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Email Settings Tab */}
-        <TabsContent value="email" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{content.email.title}</CardTitle>
-              <CardDescription>{content.email.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="fromEmail">{content.email.fromEmail}</Label>
-                  <Input 
-                    id="fromEmail" 
-                    type="email"
-                    value={settings.email.fromEmail} 
-                    onChange={(e) => handleChange('email', 'fromEmail', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contactEmail">{content.email.contactEmail}</Label>
-                  <Input 
-                    id="contactEmail" 
-                    type="email"
-                    value={settings.email.contactEmail} 
-                    onChange={(e) => handleChange('email', 'contactEmail', e.target.value)}
+                    id="tagline" 
+                    name="tagline" 
+                    value={storeSettings.tagline} 
+                    onChange={handleStoreSettingChange} 
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="emailFooter">{content.email.emailFooter}</Label>
-                <Textarea 
-                  id="emailFooter" 
-                  value={settings.email.emailFooter} 
-                  onChange={(e) => handleChange('email', 'emailFooter', e.target.value)}
-                  rows={3}
+                <Label htmlFor="description">{content.storeDescription}</Label>
+                <Input 
+                  id="description" 
+                  name="description" 
+                  value={storeSettings.description} 
+                  onChange={handleStoreSettingChange} 
                 />
               </div>
               
-              <div>
-                <h3 className="text-lg font-medium mb-4">{content.email.smtpSettings}</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpHost">{content.email.smtpHost}</Label>
-                    <Input 
-                      id="smtpHost" 
-                      value={settings.email.smtpHost} 
-                      onChange={(e) => handleChange('email', 'smtpHost', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpPort">{content.email.smtpPort}</Label>
-                    <Input 
-                      id="smtpPort" 
-                      value={settings.email.smtpPort} 
-                      onChange={(e) => handleChange('email', 'smtpPort', e.target.value)}
-                    />
+              <Separator />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Logo Upload */}
+                <div className="space-y-4">
+                  <Label>{content.storeLogo}</Label>
+                  <div className="border rounded-md p-4 text-center">
+                    <div className="mb-4 w-40 h-40 mx-auto bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                      {storeSettings.logo ? (
+                        <img 
+                          src={storeSettings.logo} 
+                          alt="Store Logo" 
+                          className="max-w-full max-h-full object-contain" 
+                        />
+                      ) : (
+                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {content.dimensions}: 200x200px
+                    </p>
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="logo-upload"
+                        onChange={(e) => handleFileUpload(e, 'logo')}
+                      />
+                      <Label
+                        htmlFor="logo-upload"
+                        className="flex items-center justify-center gap-2 cursor-pointer bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {content.selectLogo}
+                      </Label>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="grid gap-4 md:grid-cols-2 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpUser">{content.email.smtpUser}</Label>
-                    <Input 
-                      id="smtpUser" 
-                      value={settings.email.smtpUser} 
-                      onChange={(e) => handleChange('email', 'smtpUser', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpPassword">{content.email.smtpPassword}</Label>
-                    <Input 
-                      id="smtpPassword" 
-                      type="password"
-                      value={settings.email.smtpPassword} 
-                      onChange={(e) => handleChange('email', 'smtpPassword', e.target.value)}
-                    />
+                {/* Favicon Upload */}
+                <div className="space-y-4">
+                  <Label>{content.storeFavicon}</Label>
+                  <div className="border rounded-md p-4 text-center">
+                    <div className="mb-4 w-40 h-40 mx-auto bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                      {storeSettings.favicon ? (
+                        <img 
+                          src={storeSettings.favicon} 
+                          alt="Favicon" 
+                          className="max-w-full max-h-full object-contain" 
+                        />
+                      ) : (
+                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {content.dimensions}: 32x32px
+                    </p>
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="favicon-upload"
+                        onChange={(e) => handleFileUpload(e, 'favicon')}
+                      />
+                      <Label
+                        htmlFor="favicon-upload"
+                        className="flex items-center justify-center gap-2 cursor-pointer bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {content.selectFavicon}
+                      </Label>
+                    </div>
                   </div>
                 </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">{content.storeEmail}</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email"
+                    value={storeSettings.email} 
+                    onChange={handleStoreSettingChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{content.storePhone}</Label>
+                  <Input 
+                    id="phone" 
+                    name="phone" 
+                    value={storeSettings.phone} 
+                    onChange={handleStoreSettingChange} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">{content.storeAddress}</Label>
+                <Input 
+                  id="address" 
+                  name="address" 
+                  value={storeSettings.address} 
+                  onChange={handleStoreSettingChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="currency">{content.currency}</Label>
+                <Input 
+                  id="currency" 
+                  name="currency" 
+                  value={storeSettings.currency} 
+                  onChange={handleStoreSettingChange} 
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Other tabs would go here */}
-        <TabsContent value="security">
+        {/* Social Media Settings */}
+        <TabsContent value="social" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage security options</CardDescription>
+              <CardTitle><Globe className="h-4 w-4 inline mr-2" />{content.socialTab}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Security settings content will be implemented in a future update.</p>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="instagram">{content.instagram}</Label>
+                <Input 
+                  id="instagram" 
+                  name="instagram" 
+                  placeholder={content.urlPlaceholder}
+                  value={socialLinks.instagram} 
+                  onChange={handleSocialLinkChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="facebook">{content.facebook}</Label>
+                <Input 
+                  id="facebook" 
+                  name="facebook" 
+                  placeholder={content.urlPlaceholder}
+                  value={socialLinks.facebook} 
+                  onChange={handleSocialLinkChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="twitter">{content.twitter}</Label>
+                <Input 
+                  id="twitter" 
+                  name="twitter" 
+                  placeholder={content.urlPlaceholder}
+                  value={socialLinks.twitter} 
+                  onChange={handleSocialLinkChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="youtube">{content.youtube}</Label>
+                <Input 
+                  id="youtube" 
+                  name="youtube" 
+                  placeholder={content.urlPlaceholder}
+                  value={socialLinks.youtube} 
+                  onChange={handleSocialLinkChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="tiktok">{content.tiktok}</Label>
+                <Input 
+                  id="tiktok" 
+                  name="tiktok" 
+                  placeholder={content.urlPlaceholder}
+                  value={socialLinks.tiktok} 
+                  onChange={handleSocialLinkChange} 
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="users">
+        {/* SEO Settings */}
+        <TabsContent value="seo" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage admin users and permissions</CardDescription>
+              <CardTitle><Palette className="h-4 w-4 inline mr-2" />{content.seoTab}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">User management features will be implemented in a future update.</p>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="seoTitle">{content.seoTitle}</Label>
+                <Input 
+                  id="seoTitle" 
+                  name="title" 
+                  value={seoSettings.title} 
+                  onChange={handleSeoSettingChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="seoDescription">{content.seoDescription}</Label>
+                <Input 
+                  id="seoDescription" 
+                  name="description" 
+                  value={seoSettings.description} 
+                  onChange={handleSeoSettingChange} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="seoKeywords">{content.seoKeywords}</Label>
+                <Input 
+                  id="seoKeywords" 
+                  name="keywords" 
+                  value={seoSettings.keywords} 
+                  onChange={handleSeoSettingChange} 
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
       
-      <div className="flex justify-end">
-        <Button 
-          onClick={handleSave}
-          disabled={isLoading}
-          size="lg"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {content.saving}
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              {content.save}
-            </>
-          )}
-        </Button>
-      </div>
+      <Button size="lg" onClick={saveSettings}>
+        {content.saveChanges}
+      </Button>
     </div>
   );
 };
