@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Product } from '@/data/products';
 import ProductCard from './ProductCard';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/pages/admin/inventory/InventoryUtils';
 
 interface CatalogGridProps {
   products: Product[];
@@ -13,6 +14,32 @@ interface CatalogGridProps {
 const CatalogGrid = ({ products, title, subtitle }: CatalogGridProps) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Get store currency setting
+  const [storeCurrency, setStoreCurrency] = useState('USD');
+  
+  useEffect(() => {
+    // Load currency from store settings
+    const loadSettings = () => {
+      const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+      if (settings.currency) {
+        setStoreCurrency(settings.currency);
+      }
+    };
+    
+    loadSettings();
+    
+    // Listen for settings updates
+    const handleSettingsUpdate = () => {
+      loadSettings();
+    };
+    
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     if (!gridRef.current) return;
@@ -56,7 +83,15 @@ const CatalogGrid = ({ products, title, subtitle }: CatalogGridProps) => {
           )}
         >
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
+            <ProductCard 
+              key={product.id} 
+              product={{
+                ...product,
+                // Ensure currency formatting is consistent
+                formattedPrice: formatPrice(product.price, product.currency || storeCurrency)
+              }} 
+              index={index} 
+            />
           ))}
         </div>
         

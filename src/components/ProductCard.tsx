@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Product } from '@/data/products';
+import { formatPrice } from '@/pages/admin/inventory/InventoryUtils';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { formattedPrice?: string };
   index?: number;
 }
 
@@ -44,6 +45,18 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             )}
             loading="lazy"
           />
+          
+          {/* Stock status badge */}
+          {product.stock !== undefined && product.stock <= 0 && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Out of Stock
+            </div>
+          )}
+          {product.stock !== undefined && product.stock > 0 && product.stock <= (product.lowStockThreshold || 10) && (
+            <div className="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Low Stock
+            </div>
+          )}
         </div>
       </div>
       
@@ -53,7 +66,9 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <h3 className="font-medium text-base line-clamp-1">{product.name}</h3>
             <p className="text-sm text-muted-foreground mt-1">{product.brand}</p>
           </div>
-          <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+          <p className="text-sm font-semibold">
+            {product.formattedPrice || formatPrice(product.price, product.currency)}
+          </p>
         </div>
         
         <div className="mt-4 flex flex-wrap gap-1">

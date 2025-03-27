@@ -20,7 +20,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = ({
   onSave
 }) => {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         <Button 
           variant="outline" 
@@ -36,7 +36,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = ({
           <p className="text-muted-foreground">{description}</p>
         </div>
       </div>
-      <Button onClick={onSave}>
+      <Button onClick={onSave} className="shrink-0">
         <Save className="h-4 w-4 mr-2" />
         {saveButtonText}
       </Button>

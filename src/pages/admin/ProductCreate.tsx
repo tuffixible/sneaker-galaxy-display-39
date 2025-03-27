@@ -18,10 +18,12 @@ import { toast } from 'sonner';
 import { ArrowLeft, Plus, Upload, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { getCurrencies } from './inventory/InventoryUtils';
 
 const ProductCreate = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const currencies = getCurrencies();
   
   // Content based on language
   const getContent = () => {
@@ -33,7 +35,8 @@ const ProductCreate = () => {
           basicInfo: "Informações Básicas",
           name: "Nome do Produto",
           brand: "Marca",
-          price: "Preço (USD)",
+          price: "Preço",
+          currency: "Moeda",
           description: "Descrição",
           inventory: "Estoque",
           stockManagement: "Gerenciamento de Estoque",
@@ -54,6 +57,13 @@ const ProductCreate = () => {
           inactive: "Inativo",
           category: "Categoria",
           selectCategory: "Selecionar Categoria",
+          displayLocation: "Local de Exibição",
+          locationHomepage: "Página Inicial",
+          locationBanner: "Banner",
+          locationRotative: "Destaque Rotativo",
+          locationCatalog: "Apenas Catálogo",
+          locationAll: "Todos os Locais",
+          selectLocation: "Selecionar Local de Exibição",
           submit: "Criar Produto",
           cancel: "Cancelar"
         };
@@ -64,7 +74,8 @@ const ProductCreate = () => {
           basicInfo: "Información Básica",
           name: "Nombre del Producto",
           brand: "Marca",
-          price: "Precio (USD)",
+          price: "Precio",
+          currency: "Moneda",
           description: "Descripción",
           inventory: "Inventario",
           stockManagement: "Gestión de Inventario",
@@ -85,6 +96,13 @@ const ProductCreate = () => {
           inactive: "Inactivo",
           category: "Categoría",
           selectCategory: "Seleccionar Categoría",
+          displayLocation: "Ubicación de Visualización",
+          locationHomepage: "Página Principal",
+          locationBanner: "Banner",
+          locationRotative: "Destacado Rotativo",
+          locationCatalog: "Solo Catálogo",
+          locationAll: "Todas las Ubicaciones",
+          selectLocation: "Seleccionar Ubicación",
           submit: "Crear Producto",
           cancel: "Cancelar"
         };
@@ -95,7 +113,8 @@ const ProductCreate = () => {
           basicInfo: "Basic Information",
           name: "Product Name",
           brand: "Brand",
-          price: "Price (USD)",
+          price: "Price",
+          currency: "Currency",
           description: "Description",
           inventory: "Inventory",
           stockManagement: "Stock Management",
@@ -116,6 +135,13 @@ const ProductCreate = () => {
           inactive: "Inactive",
           category: "Category",
           selectCategory: "Select Category",
+          displayLocation: "Display Location",
+          locationHomepage: "Homepage",
+          locationBanner: "Banner",
+          locationRotative: "Rotative Highlight",
+          locationCatalog: "Catalog Only",
+          locationAll: "All Locations",
+          selectLocation: "Select Display Location",
           submit: "Create Product",
           cancel: "Cancel"
         };
@@ -129,6 +155,7 @@ const ProductCreate = () => {
     name: '',
     brand: '',
     price: '',
+    currency: 'USD',
     description: '',
     initialStock: '10',
     lowStockThreshold: '5',
@@ -139,7 +166,7 @@ const ProductCreate = () => {
     featured: false,
     active: true,
     category: '',
-    destination: 'site' // Site by default
+    displayLocation: 'catalog' // Default to catalog only
   });
   
   // Categories (could be fetched from API)
@@ -151,11 +178,13 @@ const ProductCreate = () => {
     { id: 'training', name: 'Training' }
   ];
   
-  // Destinations for the product
-  const destinations = [
-    { id: 'site', name: language === 'pt' ? 'Site (Catálogo)' : language === 'es' ? 'Sitio (Catálogo)' : 'Site (Catalog)' },
-    { id: 'store', name: language === 'pt' ? 'Loja Física' : language === 'es' ? 'Tienda Física' : 'Physical Store' },
-    { id: 'both', name: language === 'pt' ? 'Ambos' : language === 'es' ? 'Ambos' : 'Both' }
+  // Display locations
+  const displayLocations = [
+    { id: 'homepage', name: content.locationHomepage },
+    { id: 'banner', name: content.locationBanner },
+    { id: 'rotative', name: content.locationRotative },
+    { id: 'catalog', name: content.locationCatalog },
+    { id: 'all', name: content.locationAll }
   ];
   
   // Handle input changes
@@ -204,6 +233,7 @@ const ProductCreate = () => {
       name: formData.name,
       brand: formData.brand,
       price: parseFloat(formData.price),
+      currency: formData.currency,
       description: formData.description,
       colors: formData.colors.filter(color => color.trim() !== ''),
       sizes: formData.sizes.map(size => parseInt(size)).filter(size => !isNaN(size)),
@@ -211,7 +241,7 @@ const ProductCreate = () => {
       featured: formData.featured,
       category: formData.category,
       active: formData.active,
-      destination: formData.destination,
+      displayLocation: formData.displayLocation,
       // Inventory data
       stock: parseInt(formData.initialStock) || 0,
       lowStockThreshold: parseInt(formData.lowStockThreshold) || 5,
@@ -229,7 +259,7 @@ const ProductCreate = () => {
     const existingInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
     const inventoryItem = {
       ...newProduct,
-      sku: `SKU-${newProduct.id.padStart(6, '0')}`,
+      sku: `SKU-${newProduct.id.substring(0, 6)}`,
       status: newProduct.stock > 0 ? 
         (newProduct.stock <= newProduct.lowStockThreshold ? 'low-stock' : 'in-stock') : 
         'out-of-stock'
@@ -241,6 +271,16 @@ const ProductCreate = () => {
     
     // Trigger custom event to update product lists across the app
     window.dispatchEvent(new CustomEvent('productsUpdated'));
+    window.dispatchEvent(new CustomEvent('inventoryUpdated'));
+    
+    // If product is featured, update site content
+    if (newProduct.featured) {
+      const siteContent = JSON.parse(localStorage.getItem('siteContent') || '{}');
+      const featuredProducts = siteContent.featuredProducts || [];
+      siteContent.featuredProducts = [...featuredProducts, newProduct.id];
+      localStorage.setItem('siteContent', JSON.stringify(siteContent));
+      window.dispatchEvent(new CustomEvent('siteContentUpdated'));
+    }
     
     // Redirect back to products page
     navigate('/admin/products');
@@ -303,6 +343,27 @@ const ProductCreate = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="currency">{content.currency}</Label>
+                <Select 
+                  value={formData.currency} 
+                  onValueChange={(value) => handleChange('currency', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="USD ($)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.code} ({currency.symbol}) - {currency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="category">{content.category}</Label>
                 <Select 
                   value={formData.category} 
@@ -320,6 +381,25 @@ const ProductCreate = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="displayLocation">{content.displayLocation}</Label>
+                <Select 
+                  value={formData.displayLocation} 
+                  onValueChange={(value) => handleChange('displayLocation', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={content.selectLocation} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {displayLocations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -330,25 +410,6 @@ const ProductCreate = () => {
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={4}
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="destination">Product Destination</Label>
-              <Select 
-                value={formData.destination} 
-                onValueChange={(value) => handleChange('destination', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select destination" />
-                </SelectTrigger>
-                <SelectContent>
-                  {destinations.map((dest) => (
-                    <SelectItem key={dest.id} value={dest.id}>
-                      {dest.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
@@ -515,7 +576,7 @@ const ProductCreate = () => {
               <Checkbox 
                 id="featured" 
                 checked={formData.featured}
-                onCheckedChange={(checked) => handleChange('featured', checked)}
+                onCheckedChange={(checked) => handleChange('featured', !!checked)}
               />
               <Label htmlFor="featured">{content.featured}</Label>
             </div>
