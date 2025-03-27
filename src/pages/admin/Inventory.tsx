@@ -34,7 +34,11 @@ interface InventoryItem {
   lowStockThreshold: number;
   status: 'in-stock' | 'low-stock' | 'out-of-stock';
   sku: string;
-  sizes?: string[];
+  sizes?: number[] | string[]; // Updated to accept both number[] and string[]
+  colors?: string[];
+  price?: number;
+  description?: string;
+  featured?: boolean;
 }
 
 // Define type for size stock
@@ -355,7 +359,9 @@ const Inventory = () => {
       if (product && product.sizes) {
         const initialSizeStock: { [size: string]: number } = {};
         product.sizes.forEach(size => {
-          initialSizeStock[size] = Math.floor(product.stock / product.sizes.length);
+          // Convert size to string to use as an object key
+          const sizeKey = size.toString();
+          initialSizeStock[sizeKey] = Math.floor(product.stock / product.sizes.length);
         });
         setSizeStock(prev => ({ ...prev, [productId]: initialSizeStock }));
       }
@@ -380,7 +386,7 @@ const Inventory = () => {
         [size]: parseInt(value) || 0
       };
       
-      const totalStock = Object.values(updatedSizeStock).reduce((sum, val) => sum + val, 0);
+      const totalStock = Object.values(updatedSizeStock).reduce((sum, val) => sum + (val as number), 0);
       handleStockChange(productId, totalStock);
     }
   };
