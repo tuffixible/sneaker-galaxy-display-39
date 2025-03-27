@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from "react";
 import AdminLayout from "../components/admin/AdminLayout";
 
@@ -47,7 +46,7 @@ const Reports = lazyLoad(() => import("../pages/admin/Reports"));
 const Finances = lazyLoad(() => import("../pages/admin/Finances"));
 const SiteContent = lazyLoad(() => import("../pages/admin/SiteContent"));
 const SiteConfig = lazyLoad(() => import("../pages/admin/SiteConfig"));
-const Inventory = lazyLoad(() => import("../pages/admin/Inventory"));
+const Inventory = lazyLoad(() => import("../pages/admin/inventory"));
 
 export const routes = [
   {
