@@ -1,8 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { products } from '@/data/products';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,16 +27,67 @@ import { Search, ArrowLeft, Save, RefreshCw } from 'lucide-react';
 const Inventory = () => {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
+  const [inventory, setInventory] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('all');
   
-  // Adicionar dados de estoque simulados aos produtos
-  const [inventory, setInventory] = useState(
-    products.map(product => ({
-      ...product,
-      stock: Math.floor(Math.random() * 100),
-      lowStockThreshold: 10,
-      status: Math.random() > 0.2 ? 'in-stock' : 'out-of-stock'
-    }))
-  );
+  // Load inventory from localStorage 
+  useEffect(() => {
+    const loadInventory = () => {
+      let savedInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+      
+      // If no saved inventory, create from products data
+      if (savedInventory.length === 0) {
+        const products = JSON.parse(localStorage.getItem('products') || '[]');
+        if (products.length === 0) {
+          // Use hardcoded products as fallback
+          try {
+            // Dynamic import of products
+            import('@/data/products').then(({ products }) => {
+              savedInventory = products.map(product => ({
+                ...product,
+                stock: Math.floor(Math.random() * 100),
+                lowStockThreshold: 10,
+                status: Math.random() > 0.2 ? 'in-stock' : 'out-of-stock',
+                sku: `SKU-${product.id.padStart(6, '0')}`,
+              }));
+              setInventory(savedInventory);
+              localStorage.setItem('inventory', JSON.stringify(savedInventory));
+            });
+          } catch (error) {
+            console.error('Error loading products:', error);
+          }
+        } else {
+          // Convert products to inventory format
+          savedInventory = products.map(product => ({
+            ...product,
+            sku: `SKU-${product.id.padStart(6, '0')}`,
+            status: product.stock > 0 ? 
+              (product.stock <= product.lowStockThreshold ? 'low-stock' : 'in-stock') : 
+              'out-of-stock'
+          }));
+          setInventory(savedInventory);
+          localStorage.setItem('inventory', JSON.stringify(savedInventory));
+        }
+      } else {
+        setInventory(savedInventory);
+      }
+    };
+    
+    loadInventory();
+    
+    // Listen for updates
+    const handleInventoryUpdate = () => {
+      loadInventory();
+    };
+    
+    window.addEventListener('inventoryUpdated', handleInventoryUpdate);
+    window.addEventListener('productsUpdated', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
+      window.removeEventListener('productsUpdated', handleInventoryUpdate);
+    };
+  }, []);
   
   // Multilingual content
   const getInventoryContent = () => {
@@ -75,7 +125,10 @@ const Inventory = () => {
             inStock: "Em Estoque",
             lowStock: "Estoque Baixo",
             outOfStock: "Sem Estoque"
-          }
+          },
+          sizes: "Tamanhos",
+          sizeLabel: "Tamanho",
+          stockPerSize: "Estoque por Tamanho"
         };
       case 'es':
         return {
@@ -110,7 +163,10 @@ const Inventory = () => {
             inStock: "En Stock",
             lowStock: "Stock Bajo",
             outOfStock: "Sin Stock"
-          }
+          },
+          sizes: "Tallas",
+          sizeLabel: "Talla",
+          stockPerSize: "Stock por Talla"
         };
       default: // 'en'
         return {
@@ -145,21 +201,27 @@ const Inventory = () => {
             inStock: "In Stock",
             lowStock: "Low Stock",
             outOfStock: "Out of Stock"
-          }
+          },
+          sizes: "Sizes",
+          sizeLabel: "Size",
+          stockPerSize: "Stock per Size"
         };
     }
   };
   
   const content = getInventoryContent();
   
-  // Filter products based on search term
-  const filteredProducts = inventory.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter products based on search term and status filter
+  const filteredProducts = inventory.filter(product => {
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterStatus === 'all') return matchesSearch;
+    return matchesSearch && product.status === filterStatus;
+  });
   
   // Update stock quantity for a product
-  const handleStockChange = (id: string, stock: number) => {
+  const handleStockChange = (id, stock) => {
     setInventory(prev => 
       prev.map(item => {
         if (item.id === id) {
@@ -180,7 +242,7 @@ const Inventory = () => {
   };
   
   // Update low stock threshold for a product
-  const handleThresholdChange = (id: string, threshold: number) => {
+  const handleThresholdChange = (id, threshold) => {
     setInventory(prev => 
       prev.map(item => {
         if (item.id === id) {
@@ -202,13 +264,35 @@ const Inventory = () => {
   
   // Save inventory changes
   const handleSaveChanges = () => {
-    // Em um ambiente real, enviaria os dados para o servidor
-    console.log('Saving inventory:', inventory);
+    // Save to localStorage
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+    
+    // Update products too
+    const products = JSON.parse(localStorage.getItem('products') || '[]');
+    const updatedProducts = products.map(product => {
+      const inventoryItem = inventory.find(item => item.id === product.id);
+      if (inventoryItem) {
+        return {
+          ...product,
+          stock: inventoryItem.stock,
+          lowStockThreshold: inventoryItem.lowStockThreshold,
+          status: inventoryItem.status
+        };
+      }
+      return product;
+    });
+    localStorage.setItem('products', JSON.stringify(updatedProducts));
+    
+    // Show success message
     toast.success(content.messages.saved);
+    
+    // Trigger custom event to update product lists
+    window.dispatchEvent(new CustomEvent('productsUpdated'));
+    window.dispatchEvent(new CustomEvent('inventoryUpdated'));
   };
   
   // Get status badge class based on status
-  const getStatusBadgeClass = (status: string) => {
+  const getStatusBadgeClass = (status) => {
     switch(status) {
       case 'in-stock':
         return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
@@ -222,7 +306,7 @@ const Inventory = () => {
   };
   
   // Get status display text
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch(status) {
       case 'in-stock':
         return content.status.inStock;
@@ -232,6 +316,52 @@ const Inventory = () => {
         return content.status.outOfStock;
       default:
         return status;
+    }
+  };
+  
+  // Track stock per size (expanded view)
+  const [expandedProduct, setExpandedProduct] = useState(null);
+  const [sizeStock, setSizeStock] = useState({});
+  
+  // Toggle expanded view for a product
+  const toggleExpandProduct = (productId) => {
+    if (expandedProduct === productId) {
+      setExpandedProduct(null);
+    } else {
+      setExpandedProduct(productId);
+      
+      // Initialize size stock if not already set
+      const product = inventory.find(p => p.id === productId);
+      if (product && product.sizes) {
+        const initialSizeStock = {};
+        product.sizes.forEach(size => {
+          initialSizeStock[size] = Math.floor(product.stock / product.sizes.length);
+        });
+        setSizeStock(prev => ({ ...prev, [productId]: initialSizeStock }));
+      }
+    }
+  };
+  
+  // Update stock for a specific size
+  const handleSizeStockChange = (productId, size, value) => {
+    setSizeStock(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [size]: parseInt(value) || 0
+      }
+    }));
+    
+    // Update total stock
+    const product = inventory.find(p => p.id === productId);
+    if (product) {
+      const updatedSizeStock = {
+        ...sizeStock[productId],
+        [size]: parseInt(value) || 0
+      };
+      
+      const totalStock = Object.values(updatedSizeStock).reduce((sum, val) => sum + val, 0);
+      handleStockChange(productId, totalStock);
     }
   };
   
@@ -275,7 +405,7 @@ const Inventory = () => {
               <Label htmlFor="status-filter" className="mr-2">
                 Filtrar:
               </Label>
-              <Select defaultValue="all">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -305,61 +435,91 @@ const Inventory = () => {
               <TableBody>
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={product.images[0]} 
-                            alt={product.name} 
-                            className="h-10 w-10 object-cover rounded"
-                          />
-                          <div>
-                            <div>{product.name}</div>
-                            <div className="text-xs text-muted-foreground">{product.brand}</div>
+                    <>
+                      <TableRow key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => toggleExpandProduct(product.id)}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={product.images?.[0] || '/placeholder.svg'} 
+                              alt={product.name} 
+                              className="h-10 w-10 object-cover rounded"
+                            />
+                            <div>
+                              <div>{product.name}</div>
+                              <div className="text-xs text-muted-foreground">{product.brand}</div>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>SKU-{product.id.padStart(6, '0')}</TableCell>
-                      <TableCell>
-                        <Input 
-                          type="number" 
-                          min="0" 
-                          value={product.stock} 
-                          onChange={(e) => handleStockChange(product.id, parseInt(e.target.value) || 0)}
-                          className="w-20"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input 
-                          type="number" 
-                          min="0" 
-                          value={product.lowStockThreshold} 
-                          onChange={(e) => handleThresholdChange(product.id, parseInt(e.target.value) || 0)}
-                          className="w-20"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          getStatusBadgeClass(product.status)
-                        }`}>
-                          {getStatusText(product.status)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8"
-                          onClick={() => {
-                            handleStockChange(product.id, product.stock); // Refreshes status
-                            toast.success(`${product.name} ${content.messages.updateItem}`);
-                          }}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          {content.buttons.update}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                        </TableCell>
+                        <TableCell>{product.sku || `SKU-${product.id.padStart(6, '0')}`}</TableCell>
+                        <TableCell>
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            value={product.stock || 0} 
+                            onChange={(e) => handleStockChange(product.id, parseInt(e.target.value) || 0)}
+                            className="w-20"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            value={product.lowStockThreshold || 0} 
+                            onChange={(e) => handleThresholdChange(product.id, parseInt(e.target.value) || 0)}
+                            className="w-20"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            getStatusBadgeClass(product.status)
+                          }`}>
+                            {getStatusText(product.status)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStockChange(product.id, product.stock); // Refreshes status
+                              toast.success(`${product.name} ${content.messages.updateItem}`);
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            {content.buttons.update}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      
+                      {/* Expanded view for sizes */}
+                      {expandedProduct === product.id && product.sizes && product.sizes.length > 0 && (
+                        <TableRow className="bg-muted/30">
+                          <TableCell colSpan={6} className="p-4">
+                            <div className="space-y-4">
+                              <h4 className="font-medium">{content.stockPerSize}</h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {product.sizes.map(size => (
+                                  <div key={`size-${product.id}-${size}`} className="flex items-center space-x-2">
+                                    <Label className="w-16">{content.sizeLabel} {size}</Label>
+                                    <Input 
+                                      type="number" 
+                                      min="0" 
+                                      value={sizeStock[product.id]?.[size] || 0}
+                                      onChange={(e) => handleSizeStockChange(product.id, size, e.target.value)}
+                                      className="w-20"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))
                 ) : (
                   <TableRow>

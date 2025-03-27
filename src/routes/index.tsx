@@ -1,154 +1,146 @@
 
-import { RouteObject } from "react-router-dom";
+import { lazy } from "react";
+import AdminLayout from "../components/admin/AdminLayout";
 
-// Public Pages
-import Index from "@/pages/Index";
-import ProductDetail from "@/pages/ProductDetail";
-import Catalogo from "@/pages/Catalogo";
-import Cart from "@/pages/Cart";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import Profile from "@/pages/Profile";
-import Orders from "@/pages/Orders";
-
-// Static Pages
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Shipping from "@/pages/Shipping";
-import Returns from "@/pages/Returns";
-import SizeGuide from "@/pages/SizeGuide";
-import FAQ from "@/pages/FAQ";
-import NotFound from "@/pages/NotFound";
+// Lazy loaded pages
+const Index = lazy(() => import("../pages/Index"));
+const Catalogo = lazy(() => import("../pages/Catalogo"));
+const About = lazy(() => import("../pages/About"));
+const Contact = lazy(() => import("../pages/Contact"));
+const ProductDetail = lazy(() => import("../pages/ProductDetail"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
+const Profile = lazy(() => import("../pages/Profile"));
+const Orders = lazy(() => import("../pages/Orders"));
+const Cart = lazy(() => import("../pages/Cart"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+const FAQ = lazy(() => import("../pages/FAQ"));
+const SizeGuide = lazy(() => import("../pages/SizeGuide"));
+const Returns = lazy(() => import("../pages/Returns"));
+const Shipping = lazy(() => import("../pages/Shipping"));
 
 // Admin Pages
-import AdminLayout from "@/components/admin/AdminLayout";
-import Dashboard from "@/pages/admin/Dashboard";
-import Products from "@/pages/admin/Products";
-import ProductEdit from "@/pages/admin/ProductEdit";
-import AdminOrders from "@/pages/admin/Orders";
-import Customers from "@/pages/admin/Customers";
-import Reports from "@/pages/admin/Reports";
-import Finances from "@/pages/admin/Finances";
-import SiteContent from "@/pages/admin/SiteContent";
-import SiteConfig from "@/pages/admin/SiteConfig";
-import Inventory from "@/pages/admin/Inventory";
+const Dashboard = lazy(() => import("../pages/admin/Dashboard"));
+const Products = lazy(() => import("../pages/admin/Products"));
+const ProductCreate = lazy(() => import("../pages/admin/ProductCreate"));
+const ProductEdit = lazy(() => import("../pages/admin/ProductEdit"));
+const Orders_Admin = lazy(() => import("../pages/admin/Orders"));
+const Customers = lazy(() => import("../pages/admin/Customers"));
+const Reports = lazy(() => import("../pages/admin/Reports"));
+const Finances = lazy(() => import("../pages/admin/Finances"));
+const SiteContent = lazy(() => import("../pages/admin/SiteContent"));
+const SiteConfig = lazy(() => import("../pages/admin/SiteConfig"));
+const Inventory = lazy(() => import("../pages/admin/Inventory"));
 
-export const routes: RouteObject[] = [
-  // Public Routes
+export const routes = [
   {
     path: "/",
-    element: <Index />
-  },
-  {
-    path: "/product/:id",
-    element: <ProductDetail />
+    element: <Index />,
   },
   {
     path: "/catalogo",
-    element: <Catalogo />
+    element: <Catalogo />,
   },
-  {
-    path: "/cart",
-    element: <Cart />
-  },
-  {
-    path: "/login",
-    element: <Login />
-  },
-  {
-    path: "/register",
-    element: <Register />
-  },
-  {
-    path: "/profile",
-    element: <Profile />
-  },
-  {
-    path: "/orders",
-    element: <Orders />
-  },
-  
-  // Static Pages
   {
     path: "/about",
-    element: <About />
+    element: <About />,
   },
   {
     path: "/contact",
-    element: <Contact />
+    element: <Contact />,
   },
   {
-    path: "/shipping",
-    element: <Shipping />
+    path: "/product/:id",
+    element: <ProductDetail />,
   },
   {
-    path: "/returns",
-    element: <Returns />
+    path: "/login",
+    element: <Login />,
   },
   {
-    path: "/size-guide",
-    element: <SizeGuide />
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
+  },
+  {
+    path: "/orders",
+    element: <Orders />,
+  },
+  {
+    path: "/cart",
+    element: <Cart />,
   },
   {
     path: "/faq",
-    element: <FAQ />
+    element: <FAQ />,
   },
-  
-  // Admin Routes
+  {
+    path: "/size-guide",
+    element: <SizeGuide />,
+  },
+  {
+    path: "/returns",
+    element: <Returns />,
+  },
+  {
+    path: "/shipping",
+    element: <Shipping />,
+  },
   {
     path: "/admin",
     element: <AdminLayout />,
     children: [
       {
-        index: true,
-        element: <Dashboard />
+        path: "",
+        element: <Dashboard />,
       },
       {
         path: "products",
-        element: <Products />
-      },
-      {
-        path: "products/edit/:id",
-        element: <ProductEdit />
+        element: <Products />,
       },
       {
         path: "products/new",
-        element: <ProductEdit />
+        element: <ProductCreate />,
       },
       {
-        path: "orders",
-        element: <AdminOrders />
-      },
-      {
-        path: "customers",
-        element: <Customers />
-      },
-      {
-        path: "reports",
-        element: <Reports />
-      },
-      {
-        path: "finances",
-        element: <Finances />
-      },
-      {
-        path: "site-content",
-        element: <SiteContent />
+        path: "products/edit/:id",
+        element: <ProductEdit />,
       },
       {
         path: "inventory",
-        element: <Inventory />
+        element: <Inventory />,
+      },
+      {
+        path: "orders",
+        element: <Orders_Admin />,
+      },
+      {
+        path: "customers",
+        element: <Customers />,
+      },
+      {
+        path: "reports",
+        element: <Reports />,
+      },
+      {
+        path: "finances",
+        element: <Finances />,
+      },
+      {
+        path: "site-content",
+        element: <SiteContent />,
       },
       {
         path: "site-config",
-        element: <SiteConfig />
-      }
-    ]
+        element: <SiteConfig />,
+      },
+    ],
   },
-  
-  // Catch-all route for 404
   {
     path: "*",
-    element: <NotFound />
-  }
+    element: <NotFound />,
+  },
 ];

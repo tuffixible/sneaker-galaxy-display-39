@@ -122,14 +122,14 @@ const Navbar = () => {
     } else {
       return <>
           <DropdownMenuLabel>
-            {t ? t('navAccount') : 'Account'}
+            Account
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link to="/login">{t ? t('navLogin') : 'Login'}</Link>
+            <Link to="/login">Login</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/register">{t ? t('navRegister') : 'Register'}</Link>
+            <Link to="/register">Register</Link>
           </DropdownMenuItem>
         </>;
     }

@@ -1,8 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { products, Product } from '@/data/products';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +26,47 @@ import { Plus, MoreHorizontal, Search, Edit, Trash, Eye, Package } from 'lucide-
 const Products = () => {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
+  const [products, setProducts] = useState([]);
+  
+  // Load products from localStorage or fallback to static data
+  useEffect(() => {
+    const loadProducts = () => {
+      const savedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+      
+      if (savedProducts.length > 0) {
+        setProducts(savedProducts);
+      } else {
+        // Fallback to static data
+        try {
+          // Dynamic import of products
+          import('@/data/products').then(({ products: staticProducts }) => {
+            const productsWithStock = staticProducts.map(product => ({
+              ...product,
+              stock: Math.floor(Math.random() * 100),
+              active: Math.random() > 0.2 // 80% chance of being active
+            }));
+            setProducts(productsWithStock);
+            localStorage.setItem('products', JSON.stringify(productsWithStock));
+          });
+        } catch (error) {
+          console.error('Error loading products:', error);
+        }
+      }
+    };
+    
+    loadProducts();
+    
+    // Listen for updates
+    const handleProductsUpdated = () => {
+      loadProducts();
+    };
+    
+    window.addEventListener('productsUpdated', handleProductsUpdated);
+    
+    return () => {
+      window.removeEventListener('productsUpdated', handleProductsUpdated);
+    };
+  }, []);
   
   // Multilingual content
   const getProductsContent = () => {
@@ -114,18 +154,28 @@ const Products = () => {
   
   const content = getProductsContent();
   
-  // Add stock info to products (mocked for demo)
-  const productsWithStock = products.map(product => ({
-    ...product,
-    stock: Math.floor(Math.random() * 100),
-    active: Math.random() > 0.2 // 80% chance of being active
-  }));
-  
   // Filter products based on search term
-  const filteredProducts = productsWithStock.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter(product => 
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  // Delete product
+  const handleDeleteProduct = (productId) => {
+    // Remove from products
+    const updatedProducts = products.filter(product => product.id !== productId);
+    setProducts(updatedProducts);
+    localStorage.setItem('products', JSON.stringify(updatedProducts));
+    
+    // Remove from inventory
+    const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+    const updatedInventory = inventory.filter(item => item.id !== productId);
+    localStorage.setItem('inventory', JSON.stringify(updatedInventory));
+    
+    // Trigger updates
+    window.dispatchEvent(new CustomEvent('productsUpdated'));
+    window.dispatchEvent(new CustomEvent('inventoryUpdated'));
+  };
   
   return (
     <div className="space-y-6">
@@ -179,12 +229,21 @@ const Products = () => {
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
                     <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={product.images?.[0] || '/placeholder.svg'} 
+                            alt={product.name} 
+                            className="h-10 w-10 object-cover rounded"
+                          />
+                          {product.name}
+                        </div>
+                      </TableCell>
                       <TableCell>{product.brand}</TableCell>
-                      <TableCell>${product.price.toFixed(2)}</TableCell>
+                      <TableCell>${product.price?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>
-                        <span className={product.stock < 10 ? "text-red-500 font-medium" : ""}>
-                          {product.stock}
+                        <span className={product.stock < (product.lowStockThreshold || 10) ? "text-red-500 font-medium" : ""}>
+                          {product.stock || 0}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -219,7 +278,10 @@ const Products = () => {
                                 <span>{content.actions.edit}</span>
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => handleDeleteProduct(product.id)}
+                            >
                               <Trash className="mr-2 h-4 w-4" />
                               <span>{content.actions.delete}</span>
                             </DropdownMenuItem>
