@@ -1,13 +1,19 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { BrowserRouter, useRoutes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Providers from "./components/Providers";
 import { routes } from "./routes";
 
-// Create a component for rendering routes
+// Create a component for rendering routes with Suspense
 const AppRoutes = () => {
-  return useRoutes(routes);
+  const routeElements = useRoutes(routes);
+  return (
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+    </div>}>
+      {routeElements}
+    </Suspense>
+  );
 };
 
 // Create the query client

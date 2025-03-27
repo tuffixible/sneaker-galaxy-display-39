@@ -1,36 +1,53 @@
 
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import AdminLayout from "../components/admin/AdminLayout";
 
-// Lazy loaded pages
-const Index = lazy(() => import("../pages/Index"));
-const Catalogo = lazy(() => import("../pages/Catalogo"));
-const About = lazy(() => import("../pages/About"));
-const Contact = lazy(() => import("../pages/Contact"));
-const ProductDetail = lazy(() => import("../pages/ProductDetail"));
-const Login = lazy(() => import("../pages/Login"));
-const Register = lazy(() => import("../pages/Register"));
-const Profile = lazy(() => import("../pages/Profile"));
-const Orders = lazy(() => import("../pages/Orders"));
-const Cart = lazy(() => import("../pages/Cart"));
-const NotFound = lazy(() => import("../pages/NotFound"));
-const FAQ = lazy(() => import("../pages/FAQ"));
-const SizeGuide = lazy(() => import("../pages/SizeGuide"));
-const Returns = lazy(() => import("../pages/Returns"));
-const Shipping = lazy(() => import("../pages/Shipping"));
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex h-full w-full items-center justify-center p-8">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+  </div>
+);
+
+// Helper function to wrap lazy components with Suspense
+const lazyLoad = (importFunc) => {
+  const LazyComponent = lazy(importFunc);
+  return (props) => (
+    <Suspense fallback={<LoadingFallback />}>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+};
+
+// Lazy loaded pages with proper Suspense handling
+const Index = lazyLoad(() => import("../pages/Index"));
+const Catalogo = lazyLoad(() => import("../pages/Catalogo"));
+const About = lazyLoad(() => import("../pages/About"));
+const Contact = lazyLoad(() => import("../pages/Contact"));
+const ProductDetail = lazyLoad(() => import("../pages/ProductDetail"));
+const Login = lazyLoad(() => import("../pages/Login"));
+const Register = lazyLoad(() => import("../pages/Register"));
+const Profile = lazyLoad(() => import("../pages/Profile"));
+const Orders = lazyLoad(() => import("../pages/Orders"));
+const Cart = lazyLoad(() => import("../pages/Cart"));
+const NotFound = lazyLoad(() => import("../pages/NotFound"));
+const FAQ = lazyLoad(() => import("../pages/FAQ"));
+const SizeGuide = lazyLoad(() => import("../pages/SizeGuide"));
+const Returns = lazyLoad(() => import("../pages/Returns"));
+const Shipping = lazyLoad(() => import("../pages/Shipping"));
 
 // Admin Pages
-const Dashboard = lazy(() => import("../pages/admin/Dashboard"));
-const Products = lazy(() => import("../pages/admin/Products"));
-const ProductCreate = lazy(() => import("../pages/admin/ProductCreate"));
-const ProductEdit = lazy(() => import("../pages/admin/ProductEdit"));
-const Orders_Admin = lazy(() => import("../pages/admin/Orders"));
-const Customers = lazy(() => import("../pages/admin/Customers"));
-const Reports = lazy(() => import("../pages/admin/Reports"));
-const Finances = lazy(() => import("../pages/admin/Finances"));
-const SiteContent = lazy(() => import("../pages/admin/SiteContent"));
-const SiteConfig = lazy(() => import("../pages/admin/SiteConfig"));
-const Inventory = lazy(() => import("../pages/admin/Inventory"));
+const Dashboard = lazyLoad(() => import("../pages/admin/Dashboard"));
+const Products = lazyLoad(() => import("../pages/admin/Products"));
+const ProductCreate = lazyLoad(() => import("../pages/admin/ProductCreate"));
+const ProductEdit = lazyLoad(() => import("../pages/admin/ProductEdit"));
+const Orders_Admin = lazyLoad(() => import("../pages/admin/Orders"));
+const Customers = lazyLoad(() => import("../pages/admin/Customers"));
+const Reports = lazyLoad(() => import("../pages/admin/Reports"));
+const Finances = lazyLoad(() => import("../pages/admin/Finances"));
+const SiteContent = lazyLoad(() => import("../pages/admin/SiteContent"));
+const SiteConfig = lazyLoad(() => import("../pages/admin/SiteConfig"));
+const Inventory = lazyLoad(() => import("../pages/admin/Inventory"));
 
 export const routes = [
   {
