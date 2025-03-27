@@ -24,16 +24,36 @@ import {
 import { toast } from 'sonner';
 import { Search, ArrowLeft, Save, RefreshCw } from 'lucide-react';
 
+// Define type for inventory item
+interface InventoryItem {
+  id: string;
+  name: string;
+  brand?: string;
+  images?: string[];
+  stock: number;
+  lowStockThreshold: number;
+  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  sku: string;
+  sizes?: string[];
+}
+
+// Define type for size stock
+interface SizeStockMap {
+  [productId: string]: {
+    [size: string]: number;
+  };
+}
+
 const Inventory = () => {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
-  const [inventory, setInventory] = useState([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [filterStatus, setFilterStatus] = useState('all');
   
   // Load inventory from localStorage 
   useEffect(() => {
     const loadInventory = () => {
-      let savedInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+      let savedInventory = JSON.parse(localStorage.getItem('inventory') || '[]') as InventoryItem[];
       
       // If no saved inventory, create from products data
       if (savedInventory.length === 0) {
@@ -221,7 +241,7 @@ const Inventory = () => {
   });
   
   // Update stock quantity for a product
-  const handleStockChange = (id, stock) => {
+  const handleStockChange = (id: string, stock: number) => {
     setInventory(prev => 
       prev.map(item => {
         if (item.id === id) {
@@ -242,7 +262,7 @@ const Inventory = () => {
   };
   
   // Update low stock threshold for a product
-  const handleThresholdChange = (id, threshold) => {
+  const handleThresholdChange = (id: string, threshold: number) => {
     setInventory(prev => 
       prev.map(item => {
         if (item.id === id) {
@@ -292,7 +312,7 @@ const Inventory = () => {
   };
   
   // Get status badge class based on status
-  const getStatusBadgeClass = (status) => {
+  const getStatusBadgeClass = (status: string) => {
     switch(status) {
       case 'in-stock':
         return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
@@ -306,7 +326,7 @@ const Inventory = () => {
   };
   
   // Get status display text
-  const getStatusText = (status) => {
+  const getStatusText = (status: string) => {
     switch(status) {
       case 'in-stock':
         return content.status.inStock;
@@ -320,11 +340,11 @@ const Inventory = () => {
   };
   
   // Track stock per size (expanded view)
-  const [expandedProduct, setExpandedProduct] = useState(null);
-  const [sizeStock, setSizeStock] = useState({});
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
+  const [sizeStock, setSizeStock] = useState<SizeStockMap>({});
   
   // Toggle expanded view for a product
-  const toggleExpandProduct = (productId) => {
+  const toggleExpandProduct = (productId: string) => {
     if (expandedProduct === productId) {
       setExpandedProduct(null);
     } else {
@@ -333,7 +353,7 @@ const Inventory = () => {
       // Initialize size stock if not already set
       const product = inventory.find(p => p.id === productId);
       if (product && product.sizes) {
-        const initialSizeStock = {};
+        const initialSizeStock: { [size: string]: number } = {};
         product.sizes.forEach(size => {
           initialSizeStock[size] = Math.floor(product.stock / product.sizes.length);
         });
@@ -343,7 +363,7 @@ const Inventory = () => {
   };
   
   // Update stock for a specific size
-  const handleSizeStockChange = (productId, size, value) => {
+  const handleSizeStockChange = (productId: string, size: string, value: string) => {
     setSizeStock(prev => ({
       ...prev,
       [productId]: {
