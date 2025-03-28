@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { InventoryItem as InventoryItemType } from './InventoryUtils';
-import { getStatusBadgeClass, getStatusText } from './InventoryUtils';
+import { 
+  InventoryItem as InventoryItemType, 
+  getStatusBadgeClass, 
+  getStatusText,
+  SizeStockMap 
+} from './InventoryUtils';
 import SizeInventory from './SizeInventory';
-import { SizeStockMap } from './InventoryUtils';
 
 interface InventoryItemProps {
   product: InventoryItemType;

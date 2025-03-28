@@ -125,7 +125,11 @@ const ProductDetail = () => {
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-secondary hover:bg-secondary/80'
                       }`}
-                      onClick={() => setSelectedSize(Number(size))}
+                      onClick={() => {
+                        // Convert to number if it's a string
+                        const sizeNum = typeof size === 'string' ? Number(size) : size;
+                        setSelectedSize(sizeNum);
+                      }}
                     >
                       {size}
                     </button>

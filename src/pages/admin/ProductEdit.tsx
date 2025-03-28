@@ -248,18 +248,26 @@ const ProductEdit = () => {
   
   // Adicionar e remover tamanhos
   const handleAddSize = () => {
-    const sizeNumber = parseInt(newSize.trim());
+    // Fixed: Convert string to number before comparing and sorting
+    const sizeValue = newSize.trim();
+    const sizeNumber = parseInt(sizeValue);
+    
     if (!isNaN(sizeNumber) && !product.sizes.includes(sizeNumber)) {
       setProduct(prev => ({
         ...prev,
-        sizes: [...prev.sizes, sizeNumber].sort((a, b) => a - b)
+        sizes: [...prev.sizes, sizeNumber].sort((a, b) => {
+          // Convert both to numbers for comparison to avoid string comparison
+          const numA = typeof a === 'string' ? parseInt(a) : a;
+          const numB = typeof b === 'string' ? parseInt(b) : b;
+          return numA - numB;
+        })
       }));
       setNewSize('');
       toast.success(content.messages.sizeAdded);
     }
   };
   
-  const handleRemoveSize = (sizeToRemove: number) => {
+  const handleRemoveSize = (sizeToRemove: number | string) => {
     setProduct(prev => ({
       ...prev,
       sizes: prev.sizes.filter(size => size !== sizeToRemove)
