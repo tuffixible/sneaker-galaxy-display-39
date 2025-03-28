@@ -125,7 +125,7 @@ const ProductDetail = () => {
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-secondary hover:bg-secondary/80'
                       }`}
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => setSelectedSize(Number(size))}
                     >
                       {size}
                     </button>

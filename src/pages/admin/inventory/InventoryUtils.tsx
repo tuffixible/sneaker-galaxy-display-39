@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { Product } from '@/data/products';
 
@@ -21,6 +22,34 @@ export const calculateStatus = (stock: number, threshold: number): 'in-stock' | 
   if (stock <= 0) return 'out-of-stock';
   if (stock <= threshold) return 'low-stock';
   return 'in-stock';
+};
+
+// Get status text based on status code and language content
+export const getStatusText = (status: string, content: any): string => {
+  switch(status) {
+    case 'in-stock':
+      return content.status.inStock;
+    case 'low-stock':
+      return content.status.lowStock;
+    case 'out-of-stock':
+      return content.status.outOfStock;
+    default:
+      return 'Unknown';
+  }
+};
+
+// Get status badge class based on status
+export const getStatusBadgeClass = (status: string): string => {
+  switch(status) {
+    case 'in-stock':
+      return 'bg-green-100 text-green-800';
+    case 'low-stock':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'out-of-stock':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
 };
 
 // Save inventory changes to localStorage and trigger updates
