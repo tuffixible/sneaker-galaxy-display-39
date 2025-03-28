@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Product } from '@/data/products';
@@ -12,6 +12,28 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [storeCurrency, setStoreCurrency] = useState('USD');
+  
+  // Load currency settings
+  useEffect(() => {
+    const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+    if (settings.currency) {
+      setStoreCurrency(settings.currency);
+    }
+    
+    const handleSettingsUpdate = () => {
+      const updatedSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+      if (updatedSettings.currency) {
+        setStoreCurrency(updatedSettings.currency);
+      }
+    };
+    
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
   
   // Animation delay based on index for staggered entrance
   const animationDelay = `${index * 0.1}s`;
@@ -67,7 +89,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <p className="text-sm text-muted-foreground mt-1">{product.brand}</p>
           </div>
           <p className="text-sm font-semibold">
-            {product.formattedPrice || formatPrice(product.price, product.currency)}
+            {product.formattedPrice || formatPrice(product.price, product.currency || storeCurrency)}
           </p>
         </div>
         

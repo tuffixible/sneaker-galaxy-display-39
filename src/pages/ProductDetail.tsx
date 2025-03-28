@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { getProductById } from '@/data/products';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
+import { formatPrice } from '@/pages/admin/inventory/InventoryUtils';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,28 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [storeCurrency, setStoreCurrency] = useState('USD');
+  
+  // Load currency settings
+  useEffect(() => {
+    const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+    if (settings.currency) {
+      setStoreCurrency(settings.currency);
+    }
+    
+    const handleSettingsUpdate = () => {
+      const updatedSettings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+      if (updatedSettings.currency) {
+        setStoreCurrency(updatedSettings.currency);
+      }
+    };
+    
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
   
   if (!product) {
     return (
@@ -98,7 +121,9 @@ const ProductDetail = () => {
             <div>
               <h1 className="text-3xl font-bold">{product.name}</h1>
               <p className="text-lg text-muted-foreground mb-2">{product.brand}</p>
-              <p className="text-2xl font-semibold mb-6">${product.price.toFixed(2)}</p>
+              <p className="text-2xl font-semibold mb-6">
+                {formatPrice(product.price, product.currency || storeCurrency)}
+              </p>
               
               <div className="mb-6">
                 <h2 className="text-sm font-medium mb-2">Cores disponíveis</h2>
@@ -119,9 +144,9 @@ const ProductDetail = () => {
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <button
-                      key={size}
+                      key={size.toString()}
                       className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${
-                        selectedSize === size 
+                        selectedSize === (typeof size === 'string' ? Number(size) : size)
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-secondary hover:bg-secondary/80'
                       }`}

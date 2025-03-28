@@ -61,16 +61,31 @@ const CatalogGrid = ({ products, title, subtitle }: CatalogGridProps) => {
     };
   }, []);
 
+  // Apply current site content settings to the display
+  useEffect(() => {
+    const siteContent = JSON.parse(localStorage.getItem('siteContent') || '{}');
+    const contentTitle = document.getElementById('catalog-title');
+    const contentSubtitle = document.getElementById('catalog-subtitle');
+    
+    if (contentTitle && !title && siteContent.homepageTitle) {
+      contentTitle.textContent = siteContent.homepageTitle;
+    }
+    
+    if (contentSubtitle && !subtitle && siteContent.homepageSubtitle) {
+      contentSubtitle.textContent = siteContent.homepageSubtitle;
+    }
+  }, [title, subtitle]);
+
   return (
     <section className="py-16 px-6 md:px-8">
       <div className="container max-w-7xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-12">
             {title && (
-              <h2 className="text-3xl md:text-4xl font-bold">{title}</h2>
+              <h2 id="catalog-title" className="text-3xl md:text-4xl font-bold">{title}</h2>
             )}
             {subtitle && (
-              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
+              <p id="catalog-subtitle" className="mt-3 text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
             )}
           </div>
         )}
