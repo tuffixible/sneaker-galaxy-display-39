@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -12,6 +12,25 @@ import { toast } from 'sonner';
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutMessage, setCheckoutMessage] = useState('Thank you for your order!');
+  
+  // Load checkout message from settings
+  useEffect(() => {
+    const loadCheckoutMessage = () => {
+      const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+      if (settings.checkoutMessage) {
+        setCheckoutMessage(settings.checkoutMessage);
+      }
+    };
+    
+    loadCheckoutMessage();
+    
+    window.addEventListener('storeSettingsUpdated', loadCheckoutMessage);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', loadCheckoutMessage);
+    };
+  }, []);
   
   const handleCheckout = () => {
     setIsCheckingOut(true);
@@ -20,7 +39,7 @@ const Cart = () => {
     setTimeout(() => {
       clearCart();
       setIsCheckingOut(false);
-      toast.success('Pedido enviado com sucesso!');
+      toast.success(checkoutMessage);
     }, 2000);
   };
   

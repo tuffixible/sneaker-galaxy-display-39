@@ -6,16 +6,19 @@ import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [logo, setLogo] = useState('/logo.svg');
+  const [storeName, setStoreName] = useState('Xible Shoes');
   const navigate = useNavigate();
   const { cartItems, totalItems } = useCart();
   const { t } = useLanguage();
   const { user, isAuthenticated, isAdmin } = useAuth();
+  const isMobile = useIsMobile();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -33,19 +36,22 @@ const Navbar = () => {
     };
   }, []);
   
-  // Carregar logo do site
+  // Load store logo and name
   useEffect(() => {
-    const loadStoreLogo = () => {
+    const loadStoreSettings = () => {
       const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
       if (settings.logo) {
         setLogo(settings.logo);
       }
+      if (settings.name) {
+        setStoreName(settings.name);
+      }
     };
     
-    loadStoreLogo();
+    loadStoreSettings();
     
     const handleSettingsUpdate = () => {
-      loadStoreLogo();
+      loadStoreSettings();
     };
     
     window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
@@ -70,11 +76,11 @@ const Navbar = () => {
     }`}>
       <div className="container mx-auto px-4 md:px-6">
         <nav className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
+          {/* Logo and Brand Name */}
+          <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <img 
               src={logo} 
-              alt="Xible Shoes" 
+              alt={storeName} 
               className="h-10 w-auto object-contain" 
               onError={(e) => {
                 // Fallback to default logo if custom logo fails to load
@@ -83,14 +89,15 @@ const Navbar = () => {
                 console.log('Error loading custom logo, falling back to default');
               }}
             />
+            <span className="text-lg font-semibold hidden sm:block">{storeName}</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">{t('home') || 'Início'}</Link>
-            <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog')}</Link>
-            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about')}</Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact')}</Link>
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">{t('home') || 'Home'}</Link>
+            <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog') || 'Catalog'}</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about') || 'About Us'}</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact') || 'Contact'}</Link>
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 {t('admin') || 'Admin'}
@@ -157,10 +164,10 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-background border-t border-border/10 px-4 py-6">
           <div className="flex flex-col space-y-4">
-            <Link to="/" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('home') || 'Início'}</Link>
-            <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog')}</Link>
-            <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about')}</Link>
-            <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact')}</Link>
+            <Link to="/" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('home') || 'Home'}</Link>
+            <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog') || 'Catalog'}</Link>
+            <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about') || 'About Us'}</Link>
+            <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact') || 'Contact'}</Link>
             
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-primary" onClick={() => setIsMenuOpen(false)}>

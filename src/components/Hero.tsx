@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils';
 import { Product } from '@/data/products';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
 
 interface HeroProps {
   products: Product[];
@@ -17,6 +20,7 @@ const Hero = ({ products }: HeroProps) => {
   const intervalRef = useRef<number | null>(null);
   const { t } = useLanguage();
   const isMobile = useIsMobile();
+  const { addToCart } = useCart();
 
   const handleDotClick = (index: number) => {
     if (index === activeIndex || isAnimating) return;
@@ -36,6 +40,11 @@ const Hero = ({ products }: HeroProps) => {
       setIsAnimating(true);
       setActiveIndex((prev) => (prev + 1) % products.length);
     }, 5000);
+  };
+  
+  const handleAddToCart = (product: Product) => {
+    addToCart(product, product.sizes[0], 1);
+    toast.success(`${product.name} added to cart!`);
   };
 
   useEffect(() => {
@@ -75,7 +84,7 @@ const Hero = ({ products }: HeroProps) => {
         <div className="flex flex-col justify-center pt-12 md:pt-0 order-2 md:order-1">
           {/* Store Name with Animation */}
           <div className="mb-8">
-            <h2 className="text-lg font-medium text-primary animate-fade-in opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+            <h2 className="text-xl font-medium text-primary animate-fade-in opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
               Xible Shoes
             </h2>
           </div>
@@ -109,6 +118,13 @@ const Hero = ({ products }: HeroProps) => {
                     {t('viewDetails')}
                     <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
                   </Link>
+                  <Button
+                    onClick={() => handleAddToCart(product)}
+                    className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-full transition-all hover:bg-primary/90 hover:scale-105 group"
+                  >
+                    {t('addToCart') || 'Add to Cart'}
+                    <ArrowUpRight size={16} className="ml-2 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </Button>
                   <Link
                     to="/catalogo"
                     className="inline-flex items-center justify-center px-6 py-3 bg-secondary text-foreground font-medium rounded-full transition-all hover:bg-secondary/80 hover:scale-105 group"
@@ -166,6 +182,7 @@ const Hero = ({ products }: HeroProps) => {
                   className="relative z-10 w-full h-auto max-w-md mx-auto object-contain transform -rotate-12 hover:rotate-0 transition-transform duration-500 ease-out-expo"
                   style={{ 
                     maxHeight: isMobile ? '40vh' : '70vh',
+                    width: isMobile ? '125%' : '125%',  // Increased logo size by 25%
                     filter: 'drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.15))'
                   }}
                   loading="lazy"

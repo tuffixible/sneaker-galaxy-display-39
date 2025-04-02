@@ -115,25 +115,40 @@ const App = () => {
   const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
     
-    // Forçar atualização do cache adicionando timestamp
+    // Force cache update by adding timestamp
     const timestamp = new Date().getTime();
     const faviconUrlWithCache = faviconUrl.includes('?') 
       ? `${faviconUrl}&t=${timestamp}` 
       : `${faviconUrl}?t=${timestamp}`;
     
-    // Atualizar todos os links de favicon
+    // Update all favicon links
     const links = document.querySelectorAll("link[rel*='icon']");
     
-    // Se não existirem ícones, criar um novo
+    // If no icons exist, create a new one
     if (links.length === 0) {
       const link = document.createElement('link');
+      link.type = 'image/x-icon'; // Use a generic type that works for multiple formats
       link.rel = 'icon';
       link.href = faviconUrlWithCache;
       document.head.appendChild(link);
     } else {
-      // Atualizar todos os ícones existentes
+      // Update all existing icons
       links.forEach(link => {
         if (link instanceof HTMLLinkElement) {
+          // Set type based on file extension
+          if (faviconUrl.endsWith('.svg')) {
+            link.type = 'image/svg+xml';
+          } else if (faviconUrl.endsWith('.png')) {
+            link.type = 'image/png';
+          } else if (faviconUrl.endsWith('.jpg') || faviconUrl.endsWith('.jpeg')) {
+            link.type = 'image/jpeg';
+          } else if (faviconUrl.endsWith('.webp')) {
+            link.type = 'image/webp';
+          } else if (faviconUrl.endsWith('.avif')) {
+            link.type = 'image/avif';
+          } else {
+            link.type = 'image/x-icon'; // Default
+          }
           link.href = faviconUrlWithCache;
         }
       });

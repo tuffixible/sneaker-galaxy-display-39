@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Globe, Store, Palette, Mail, MapPin, Phone } from 'lucide-react';
+import { Upload, Image as ImageIcon, Globe, Store, Palette, Mail, MapPin, Phone, ShoppingCart } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 const SiteConfig = () => {
   const { language } = useLanguage();
@@ -23,7 +24,8 @@ const SiteConfig = () => {
     email: 'contact@xiblestore.com',
     phone: '+1 (555) 123-4567',
     address: '123 Sneaker Street, Footwear City, FC 12345',
-    currency: 'USD'
+    currency: 'USD',
+    checkoutMessage: 'Thank you for your purchase! Your order has been successfully processed.'
   });
   
   // State for social media links
@@ -48,7 +50,10 @@ const SiteConfig = () => {
     const savedSocialLinks = localStorage.getItem('socialLinks');
     const savedSeoSettings = localStorage.getItem('seoSettings');
     
-    if (savedStoreSettings) setStoreSettings(JSON.parse(savedStoreSettings));
+    if (savedStoreSettings) setStoreSettings(prevSettings => ({
+      ...prevSettings,
+      ...JSON.parse(savedStoreSettings)
+    }));
     if (savedSocialLinks) setSocialLinks(JSON.parse(savedSocialLinks));
     if (savedSeoSettings) setSeoSettings(JSON.parse(savedSeoSettings));
   }, []);
@@ -84,6 +89,14 @@ const SiteConfig = () => {
   const handleFileUpload = (e, fieldName) => {
     const file = e.target.files[0];
     if (file) {
+      // Check for valid image formats
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp', 'image/avif'];
+      
+      if (!validImageTypes.includes(file.type)) {
+        toast.error(`Unsupported file type. Please use JPEG, PNG, GIF, SVG, WebP or AVIF.`);
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setStoreSettings(prev => ({
@@ -132,6 +145,7 @@ const SiteConfig = () => {
           generalTab: "Geral",
           socialTab: "Redes Sociais",
           seoTab: "SEO",
+          checkoutTab: "Checkout",
           storeName: "Nome da Loja",
           storeTagline: "Slogan",
           storeDescription: "Descrição",
@@ -153,7 +167,9 @@ const SiteConfig = () => {
           seoKeywords: "Palavras-chave",
           saveChanges: "Salvar Alterações",
           urlPlaceholder: "URL do perfil",
-          dimensions: "Dimensões recomendadas"
+          dimensions: "Dimensões recomendadas",
+          checkoutMessage: "Mensagem de Checkout",
+          checkoutMessageDesc: "Esta mensagem será exibida após a finalização da compra"
         };
       case 'es':
         return {
@@ -162,6 +178,7 @@ const SiteConfig = () => {
           generalTab: "General",
           socialTab: "Redes Sociales",
           seoTab: "SEO",
+          checkoutTab: "Checkout",
           storeName: "Nombre de la Tienda",
           storeTagline: "Eslogan",
           storeDescription: "Descripción",
@@ -183,7 +200,9 @@ const SiteConfig = () => {
           seoKeywords: "Palabras Clave",
           saveChanges: "Guardar Cambios",
           urlPlaceholder: "URL del perfil",
-          dimensions: "Dimensiones recomendadas"
+          dimensions: "Dimensiones recomendadas",
+          checkoutMessage: "Mensaje de Checkout",
+          checkoutMessageDesc: "Este mensaje se mostrará después de finalizar la compra"
         };
       default: // 'en'
         return {
@@ -192,6 +211,7 @@ const SiteConfig = () => {
           generalTab: "General",
           socialTab: "Social Media",
           seoTab: "SEO",
+          checkoutTab: "Checkout",
           storeName: "Store Name",
           storeTagline: "Tagline",
           storeDescription: "Description",
@@ -213,7 +233,9 @@ const SiteConfig = () => {
           seoKeywords: "Keywords",
           saveChanges: "Save Changes",
           urlPlaceholder: "Profile URL",
-          dimensions: "Recommended dimensions"
+          dimensions: "Recommended dimensions",
+          checkoutMessage: "Checkout Message",
+          checkoutMessageDesc: "This message will be displayed after checkout completion"
         };
     }
   };
@@ -232,6 +254,7 @@ const SiteConfig = () => {
           <TabsTrigger value="general">{content.generalTab}</TabsTrigger>
           <TabsTrigger value="social">{content.socialTab}</TabsTrigger>
           <TabsTrigger value="seo">{content.seoTab}</TabsTrigger>
+          <TabsTrigger value="checkout">{content.checkoutTab}</TabsTrigger>
         </TabsList>
         
         {/* General Settings */}
@@ -298,7 +321,7 @@ const SiteConfig = () => {
                     <div className="relative">
                       <Input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp,image/avif"
                         className="hidden"
                         id="logo-upload"
                         onChange={(e) => handleFileUpload(e, 'logo')}
@@ -335,7 +358,7 @@ const SiteConfig = () => {
                     <div className="relative">
                       <Input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp,image/avif"
                         className="hidden"
                         id="favicon-upload"
                         onChange={(e) => handleFileUpload(e, 'favicon')}
@@ -500,6 +523,29 @@ const SiteConfig = () => {
                   value={seoSettings.keywords} 
                   onChange={handleSeoSettingChange} 
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Checkout Settings */}
+        <TabsContent value="checkout" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle><ShoppingCart className="h-4 w-4 inline mr-2" />{content.checkoutTab}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="checkoutMessage">{content.checkoutMessage}</Label>
+                <Textarea 
+                  id="checkoutMessage" 
+                  name="checkoutMessage"
+                  placeholder={content.checkoutMessageDesc}
+                  value={storeSettings.checkoutMessage} 
+                  onChange={handleStoreSettingChange}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">{content.checkoutMessageDesc}</p>
               </div>
             </CardContent>
           </Card>

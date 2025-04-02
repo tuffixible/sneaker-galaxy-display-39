@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface EditContentButtonProps {
   pageId: string;
@@ -15,6 +15,11 @@ const EditContentButton: React.FC<EditContentButtonProps> = ({ pageId }) => {
   const { isAuthenticated, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if current page can be edited
+  const editablePaths = ['/', '/about', '/contact']; // Add paths that can be edited
+  const isEditablePath = editablePaths.includes(location.pathname);
 
   const handleToggleEdit = () => {
     if (!isEditing) {
@@ -52,7 +57,12 @@ const EditContentButton: React.FC<EditContentButtonProps> = ({ pageId }) => {
     navigate('/admin/site-content');
   };
 
-  if (!isAuthenticated || !isAdmin) return null;
+  // Reset edit mode when changing pages
+  useEffect(() => {
+    setIsEditing(false);
+  }, [location.pathname]);
+
+  if (!isAuthenticated || !isAdmin || !isEditablePath) return null;
 
   return (
     <div className="fixed top-24 right-6 z-40 flex gap-2">
