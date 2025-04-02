@@ -3,7 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { InventoryItem, SizeStockMap, getInventoryContent, calculateStatus, saveInventoryChanges } from './InventoryUtils';
+import { 
+  InventoryItem, 
+  SizeStockMap, 
+  getInventoryContent, 
+  calculateStatus, 
+  saveInventoryChanges 
+} from './InventoryUtils';
 import InventoryHeader from './InventoryHeader';
 import InventoryFilterBar from './InventoryFilterBar';
 import InventoryTable from './InventoryTable';
@@ -144,9 +150,12 @@ const Inventory = () => {
         product.sizes.forEach(size => {
           // Convert size to string to use as an object key
           const sizeKey = size.toString();
-          initialSizeStock[sizeKey] = Math.floor(product.stock / product.sizes.length);
+          initialSizeStock[sizeKey] = Math.floor(product.stock / product.sizes!.length);
         });
-        setSizeStock(prev => ({ ...prev, [productId]: initialSizeStock }));
+        setSizeStock(prev => ({ 
+          ...prev, 
+          [productId]: initialSizeStock 
+        }));
       }
     }
   };

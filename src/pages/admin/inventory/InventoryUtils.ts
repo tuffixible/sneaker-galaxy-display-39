@@ -13,9 +13,16 @@ export interface InventoryItem {
 
 export interface SizeStockMap {
   [productId: string]: {
-    [size: string]: string;
+    [size: string]: number; // Changed from string to number
   };
 }
+
+// Calculate status based on stock and threshold
+export const calculateStatus = (stock: number, threshold: number): "in-stock" | "low-stock" | "out-of-stock" => {
+  if (stock <= 0) return "out-of-stock";
+  if (stock <= threshold) return "low-stock";
+  return "in-stock";
+};
 
 // Status utility functions
 export const getStatusBadgeClass = (status: string) => {
@@ -70,4 +77,150 @@ export const formatPrice = (price: number, currencyCode: string = "USD") => {
   }
   
   return `${symbol}${price.toFixed(2)}`;
+};
+
+// Save inventory changes to localStorage and trigger updates
+export const saveInventoryChanges = (inventory: InventoryItem[]): void => {
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  
+  // Update products data as well to keep both in sync
+  const products = inventory.map(item => ({
+    id: item.id,
+    name: item.name,
+    brand: item.brand,
+    price: item.price || 0, // Add default value
+    colors: item.colors,
+    sizes: item.sizes,
+    images: item.images,
+    description: item.description,
+    featured: item.featured,
+    stock: item.stock,
+    lowStockThreshold: item.lowStockThreshold,
+    active: item.active !== false, // Default to true if not specified
+    displayLocation: item.displayLocation || 'catalog',
+    currency: item.currency || 'USD'
+  }));
+  
+  localStorage.setItem('products', JSON.stringify(products));
+  
+  // Dispatch events to notify other components
+  window.dispatchEvent(new CustomEvent('inventoryUpdated'));
+  window.dispatchEvent(new CustomEvent('productsUpdated'));
+};
+
+// Get multilingual content for inventory page
+export const getInventoryContent = (language: string) => {
+  switch(language) {
+    case 'pt':
+      return {
+        title: "Gerenciamento de Estoque",
+        description: "Controle o estoque de todos os produtos",
+        search: "Buscar produtos...",
+        buttons: {
+          save: "Salvar Alterações",
+          back: "Voltar para Produtos"
+        },
+        filters: {
+          all: "Todos os Produtos",
+          inStock: "Em Estoque",
+          lowStock: "Estoque Baixo",
+          outOfStock: "Sem Estoque"
+        },
+        columns: {
+          product: "Produto",
+          sku: "SKU",
+          stock: "Estoque",
+          threshold: "Limite Baixo",
+          status: "Status",
+          actions: "Ações"
+        },
+        statusTexts: {
+          "in-stock": "Em Estoque",
+          "low-stock": "Estoque Baixo",
+          "out-of-stock": "Sem Estoque"
+        },
+        stockPerSize: "Estoque por Tamanho",
+        sizeLabel: "Tam.",
+        messages: {
+          saved: "Alterações de estoque salvas com sucesso!",
+          updateItem: "atualizado com sucesso",
+          error: "Erro ao salvar alterações."
+        },
+        noProducts: "Nenhum produto encontrado"
+      };
+    case 'es':
+      return {
+        title: "Gestión de Inventario",
+        description: "Controla el inventario de todos los productos",
+        search: "Buscar productos...",
+        buttons: {
+          save: "Guardar Cambios",
+          back: "Volver a Productos"
+        },
+        filters: {
+          all: "Todos los Productos",
+          inStock: "En Stock",
+          lowStock: "Stock Bajo",
+          outOfStock: "Sin Stock"
+        },
+        columns: {
+          product: "Producto",
+          sku: "SKU",
+          stock: "Stock",
+          threshold: "Límite Bajo",
+          status: "Estado",
+          actions: "Acciones"
+        },
+        statusTexts: {
+          "in-stock": "En Stock",
+          "low-stock": "Stock Bajo",
+          "out-of-stock": "Sin Stock"
+        },
+        stockPerSize: "Stock por Talla",
+        sizeLabel: "Talla",
+        messages: {
+          saved: "¡Cambios de inventario guardados con éxito!",
+          updateItem: "actualizado con éxito",
+          error: "Error al guardar cambios."
+        },
+        noProducts: "No se encontraron productos"
+      };
+    default: // 'en'
+      return {
+        title: "Inventory Management",
+        description: "Control stock for all products",
+        search: "Search products...",
+        buttons: {
+          save: "Save Changes",
+          back: "Back to Products"
+        },
+        filters: {
+          all: "All Products",
+          inStock: "In Stock",
+          lowStock: "Low Stock",
+          outOfStock: "Out of Stock"
+        },
+        columns: {
+          product: "Product",
+          sku: "SKU",
+          stock: "Stock",
+          threshold: "Low Threshold",
+          status: "Status",
+          actions: "Actions"
+        },
+        statusTexts: {
+          "in-stock": "In Stock",
+          "low-stock": "Low Stock",
+          "out-of-stock": "Out of Stock"
+        },
+        stockPerSize: "Stock per Size",
+        sizeLabel: "Size",
+        messages: {
+          saved: "Inventory changes saved successfully!",
+          updateItem: "updated successfully",
+          error: "Error saving changes."
+        },
+        noProducts: "No products found"
+      };
+  }
 };
