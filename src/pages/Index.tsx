@@ -8,13 +8,14 @@ import FloatingSocialButtons from '@/components/FloatingSocialButtons';
 import { getProductsByLocation, getFeaturedProducts } from '@/data/products';
 import { getProductsByCategory } from '@/pages/admin/inventory/InventoryUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Product } from '@/data/products';
 
 const Index = () => {
   const { language } = useLanguage();
   const [featuredProducts, setFeaturedProducts] = useState(getFeaturedProducts());
   const [homepageProducts, setHomepageProducts] = useState(getProductsByLocation('homepage'));
-  const [onSaleProducts, setOnSaleProducts] = useState(getProductsByCategory('onSale'));
-  const [discountProducts, setDiscountProducts] = useState(getProductsByCategory('discount'));
+  const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([]);
+  const [discountProducts, setDiscountProducts] = useState<Product[]>([]);
   const [siteContent, setSiteContent] = useState<any>({});
   
   // Get translations based on language
@@ -86,8 +87,28 @@ const Index = () => {
     const handleProductsUpdate = () => {
       setFeaturedProducts(getFeaturedProducts());
       setHomepageProducts(getProductsByLocation('homepage'));
-      setOnSaleProducts(getProductsByCategory('onSale'));
-      setDiscountProducts(getProductsByCategory('discount'));
+      
+      // Fix type compatibility by ensuring all required fields are present
+      const onSale = getProductsByCategory('onSale').map(item => ({
+        ...item,
+        price: item.price || 0,
+        colors: item.colors || [],
+        sizes: item.sizes || [],
+        images: item.images || [],
+        description: item.description || '',
+      })) as Product[];
+      
+      const discount = getProductsByCategory('discount').map(item => ({
+        ...item,
+        price: item.price || 0,
+        colors: item.colors || [],
+        sizes: item.sizes || [],
+        images: item.images || [],
+        description: item.description || '',
+      })) as Product[];
+      
+      setOnSaleProducts(onSale);
+      setDiscountProducts(discount);
     };
     
     // Update site content when it changes
@@ -97,6 +118,9 @@ const Index = () => {
     
     window.addEventListener('productsUpdated', handleProductsUpdate);
     window.addEventListener('siteContentUpdated', handleSiteContentUpdate);
+    
+    // Initial load of category products
+    handleProductsUpdate();
     
     return () => {
       window.removeEventListener('productsUpdated', handleProductsUpdate);

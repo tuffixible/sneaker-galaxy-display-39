@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Instagram, WhatsApp } from 'lucide-react';
+import { MessageCircle, Instagram } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface FloatingSocialButtonsProps {
   whatsappNumber?: string;
@@ -57,22 +58,25 @@ const FloatingSocialButtons: React.FC<FloatingSocialButtonsProps> = ({
 
   return (
     <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
-      <button
+      <Button
         onClick={handleWhatsAppClick}
-        className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110 animate-bounce"
-        style={{ animationDuration: '2s', animationIterationCount: 1 }}
+        variant="whatsapp"
+        size="circle"
+        animation="bounce"
         aria-label="Chat no WhatsApp"
       >
-        <WhatsApp size={24} />
-      </button>
+        <MessageCircle size={24} />
+      </Button>
       
-      <button
+      <Button
         onClick={handleInstagramClick}
-        className="bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110"
+        variant="instagram"
+        size="circle"
+        animation="scale"
         aria-label="Siga no Instagram"
       >
         <Instagram size={24} />
-      </button>
+      </Button>
     </div>
   );
 };

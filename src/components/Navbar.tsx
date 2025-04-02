@@ -13,9 +13,9 @@ const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [logo, setLogo] = useState('/logo.svg');
   const navigate = useNavigate();
-  const { cart } = useCart();
+  const { cartItems, totalItems } = useCart();
   const { t } = useLanguage();
-  const { isLoggedIn, userInfo } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -109,7 +109,7 @@ const Navbar = () => {
 
             <LanguageSelector />
 
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <Link to="/profile" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <User className="h-5 w-5" />
               </Link>
@@ -119,9 +119,9 @@ const Navbar = () => {
 
             <Link to="/cart" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors">
               <ShoppingCart className="h-5 w-5" />
-              {cart.items.length > 0 && (
+              {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cart.items.length}
+                  {totalItems}
                 </span>
               )}
             </Link>
@@ -131,9 +131,9 @@ const Navbar = () => {
           <div className="flex md:hidden items-center space-x-4">
             <Link to="/cart" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30">
               <ShoppingCart className="h-5 w-5" />
-              {cart.items.length > 0 && (
+              {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cart.items.length}
+                  {totalItems}
                 </span>
               )}
             </Link>
@@ -155,7 +155,7 @@ const Navbar = () => {
             <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about')}</Link>
             <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact')}</Link>
             
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <Link to="/profile" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('profile')}</Link>
             ) : (
               <Link to="/login" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('login')}</Link>

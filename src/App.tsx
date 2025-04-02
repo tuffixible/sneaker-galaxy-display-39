@@ -60,7 +60,7 @@ const App = () => {
     loadSettings();
     
     // Listen for settings updates
-    const handleSettingsUpdate = (event) => {
+    const handleSettingsUpdate = (event: any) => {
       // If specific field was updated
       if (event.detail?.field) {
         setStoreSettings(prev => ({
@@ -95,7 +95,7 @@ const App = () => {
   }, []);
   
   // Function to update document head elements
-  const updateDocumentHead = (settings) => {
+  const updateDocumentHead = (settings: any) => {
     // Update favicon
     if (settings.favicon) {
       updateFavicon(settings.favicon);
@@ -112,7 +112,7 @@ const App = () => {
   };
   
   // Function to update just the favicon
-  const updateFavicon = (faviconUrl) => {
+  const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
     
     // Forçar atualização do cache adicionando timestamp
@@ -133,7 +133,9 @@ const App = () => {
     } else {
       // Atualizar todos os ícones existentes
       links.forEach(link => {
-        link.href = faviconUrlWithCache;
+        if (link instanceof HTMLLinkElement) {
+          link.href = faviconUrlWithCache;
+        }
       });
     }
     
