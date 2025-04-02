@@ -9,11 +9,18 @@ export interface InventoryItem {
   status: "in-stock" | "low-stock" | "out-of-stock";
   images?: string[];
   sizes?: (string | number)[];
+  price?: number;
+  colors?: string[];
+  description?: string;
+  featured?: boolean;
+  active?: boolean;
+  displayLocation?: 'homepage' | 'banner' | 'rotative' | 'catalog' | 'all';
+  currency?: string;
 }
 
 export interface SizeStockMap {
   [productId: string]: {
-    [size: string]: number; // Changed from string to number
+    [size: string]: number;
   };
 }
 
