@@ -1,55 +1,51 @@
 
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, Search } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
 import LanguageSelector from './LanguageSelector';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [cartItems, setCartItems] = useState<number>(0);
-  const [storeLogo, setStoreLogo] = useState('/logo.svg');
-  const [storeName, setStoreName] = useState('Xible Store');
-  const location = useLocation();
-  const {
-    t,
-    language
-  } = useLanguage();
-  const {
-    user,
-    isAuthenticated,
-    isAdmin,
-    logout
-  } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSticky, setIsSticky] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [logo, setLogo] = useState('/logo.svg');
+  const navigate = useNavigate();
+  const { cart } = useCart();
+  const { t } = useLanguage();
+  const { isLoggedIn, userInfo } = useAuth();
 
-  // Toggle the mobile menu
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
-  // Load store settings
   useEffect(() => {
-    const loadSettings = () => {
-      const savedSettings = localStorage.getItem('storeSettings');
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        if (parsedSettings.logo) {
-          setStoreLogo(parsedSettings.logo);
-        }
-        if (parsedSettings.name) {
-          setStoreName(parsedSettings.name);
-        }
+    const handleScroll = () => {
+      setIsSticky(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+  
+  // Carregar logo do site
+  useEffect(() => {
+    const loadStoreLogo = () => {
+      const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+      if (settings.logo) {
+        setLogo(settings.logo);
       }
     };
     
-    // Initial load
-    loadSettings();
+    loadStoreLogo();
     
-    // Listen for settings updates
     const handleSettingsUpdate = () => {
-      loadSettings();
+      loadStoreLogo();
     };
     
     window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
@@ -59,184 +55,133 @@ const Navbar = () => {
     };
   }, []);
 
-  // Handle scrolling effect
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Update cart count from localStorage
-  useEffect(() => {
-    const updateCartCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      setCartItems(cart.length);
-    };
-
-    // Initial load
-    updateCartCount();
-
-    // Listen for storage events to update cart count across tabs
-    window.addEventListener('storage', updateCartCount);
-    // Custom event for same-tab updates
-    window.addEventListener('cartUpdated', updateCartCount);
-    return () => {
-      window.removeEventListener('storage', updateCartCount);
-      window.removeEventListener('cartUpdated', updateCartCount);
-    };
-  }, []);
-
-  // Close mobile menu when changing routes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
-
-  // User menu content based on authentication status
-  const getUserMenuContent = () => {
-    if (isAuthenticated) {
-      return <>
-          <DropdownMenuLabel>
-            {language === 'pt' ? 'Olá' : language === 'es' ? 'Hola' : 'Hello'}, {user?.name}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {isAdmin && <DropdownMenuItem asChild>
-              <Link to="/admin" className="Admin">Admin</Link>
-            </DropdownMenuItem>}
-          <DropdownMenuItem asChild>
-            <Link to="/profile">Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/orders">Orders</Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>
-            Logout
-          </DropdownMenuItem>
-        </>;
-    } else {
-      return <>
-          <DropdownMenuLabel>
-            Account
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link to="/login">Login</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/register">Register</Link>
-          </DropdownMenuItem>
-        </>;
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Navigate to search page or filter
+      navigate(`/catalogo?search=${encodeURIComponent(searchTerm)}`);
+      setSearchTerm('');
     }
   };
 
-  return <header className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out-expo py-4 px-6 md:px-8', isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm' : 'bg-transparent')}>
-      <div className="container max-w-7xl mx-auto">
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isSticky ? 'bg-background shadow-md py-2' : 'bg-background/80 backdrop-blur-lg py-4'
+    }`}>
+      <div className="container mx-auto px-4 md:px-6">
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img src={storeLogo} alt={storeName} className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold tracking-tight">
-              {storeName}
-            </span>
+          <Link to="/" className="flex-shrink-0">
+            <img 
+              src={logo} 
+              alt="Xible Store" 
+              className="h-10 w-auto object-contain" 
+              onError={(e) => {
+                // Fallback to default logo if custom logo fails to load
+                const target = e.target as HTMLImageElement;
+                target.src = '/logo.svg'; 
+                console.log('Error loading custom logo, falling back to default');
+              }}
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={cn("text-sm font-medium hover:text-primary transition-colors", location.pathname === "/" && "text-primary")}>
-              {t ? t('navHome') : 'Home'}
-            </Link>
-            <Link to="/catalogo" className={cn("text-sm font-medium hover:text-primary transition-colors", location.pathname === "/catalogo" && "text-primary")}>
-              {t ? t('navCatalog') : 'Catalog'}
-            </Link>
-            <Link to="/about" className={cn("text-sm font-medium hover:text-primary transition-colors", location.pathname === "/about" && "text-primary")}>
-              {t ? t('navAbout') : 'About'}
-            </Link>
-            <Link to="/contact" className={cn("text-sm font-medium hover:text-primary transition-colors", location.pathname === "/contact" && "text-primary")}>
-              {t ? t('navContact') : 'Contact'}
+            <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog')}</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about')}</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact')}</Link>
+          </div>
+
+          {/* Search & Cart */}
+          <div className="hidden md:flex items-center space-x-4">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                placeholder={t('search')}
+                className="w-40 lg:w-60 py-1.5 px-3 pr-8 text-sm rounded-full bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+
+            <LanguageSelector />
+
+            {isLoggedIn ? (
+              <Link to="/profile" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                <User className="h-5 w-5" />
+              </Link>
+            ) : (
+              <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">{t('login')}</Link>
+            )}
+
+            <Link to="/cart" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors">
+              <ShoppingCart className="h-5 w-5" />
+              {cart.items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cart.items.length}
+                </span>
+              )}
             </Link>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80" aria-label="Search">
-              <Search size={18} />
-            </button>
-            
-            <Link to="/cart" className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80 relative" aria-label="Cart">
-              <ShoppingBag size={18} />
-              {cartItems > 0 && <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems}
-                </span>}
+          {/* Mobile menu button */}
+          <div className="flex md:hidden items-center space-x-4">
+            <Link to="/cart" className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30">
+              <ShoppingCart className="h-5 w-5" />
+              {cart.items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cart.items.length}
+                </span>
+              )}
             </Link>
-            
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80" aria-label="User menu">
-                  <User size={18} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {getUserMenuContent()}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <LanguageSelector />
-            
-            <button className="md:hidden w-10 h-10 flex items-center justify-center rounded-full bg-secondary text-foreground transition-all hover:bg-secondary/80" onClick={toggleMenu} aria-label="Toggle menu">
-              {isOpen ? <X size={18} /> : <Menu size={18} />}
+            <button
+              onClick={toggleMenu}
+              className="flex items-center justify-center h-9 w-9 rounded-full bg-secondary/30"
+            >
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </nav>
       </div>
 
       {/* Mobile Menu */}
-      <div className={cn("fixed inset-0 bg-white z-40 transition-transform duration-500 ease-out-expo pt-20", isOpen ? "translate-x-0" : "translate-x-full")}>
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-col space-y-6">
-            <Link to="/" className="text-lg font-medium py-2 border-b border-border">
-              {t ? t('navHome') : 'Home'}
-            </Link>
-            <Link to="/catalogo" className="text-lg font-medium py-2 border-b border-border">
-              {t ? t('navCatalog') : 'Catalog'}
-            </Link>
-            <Link to="/about" className="text-lg font-medium py-2 border-b border-border">
-              {t ? t('navAbout') : 'About'}
-            </Link>
-            <Link to="/contact" className="text-lg font-medium py-2 border-b border-border">
-              {t ? t('navContact') : 'Contact'}
-            </Link>
-            {isAuthenticated ? <>
-                {isAdmin && <Link to="/admin" className="text-lg font-medium py-2 border-b border-border">
-                    Admin
-                  </Link>}
-                <Link to="/profile" className="text-lg font-medium py-2 border-b border-border">
-                  Profile
-                </Link>
-                <Link to="/orders" className="text-lg font-medium py-2 border-b border-border">
-                  Orders
-                </Link>
-                <button onClick={logout} className="text-lg font-medium py-2 border-b border-border text-left text-red-500">
-                  Logout
-                </button>
-              </> : <>
-                <Link to="/login" className="text-lg font-medium py-2 border-b border-border">
-                  {t ? t('navLogin') : 'Login'}
-                </Link>
-                <Link to="/register" className="text-lg font-medium py-2 border-b border-border">
-                  {t ? t('navRegister') : 'Register'}
-                </Link>
-              </>}
+      {isMenuOpen && (
+        <div className="md:hidden bg-background border-t border-border/10 px-4 py-6">
+          <div className="flex flex-col space-y-4">
+            <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog')}</Link>
+            <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about')}</Link>
+            <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact')}</Link>
+            
+            {isLoggedIn ? (
+              <Link to="/profile" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('profile')}</Link>
+            ) : (
+              <Link to="/login" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('login')}</Link>
+            )}
+            
+            <form onSubmit={handleSearch} className="relative mt-2">
+              <input
+                type="text"
+                placeholder={t('search')}
+                className="w-full py-2 px-3 pr-8 text-sm rounded-full bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+            
+            <div className="pt-2">
+              <LanguageSelector />
+            </div>
           </div>
         </div>
-      </div>
-    </header>;
+      )}
+    </header>
+  );
 };
 
 export default Navbar;

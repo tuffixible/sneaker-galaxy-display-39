@@ -16,6 +16,10 @@ export interface InventoryItem {
   active?: boolean;
   displayLocation?: 'homepage' | 'banner' | 'rotative' | 'catalog' | 'all';
   currency?: string;
+  onSale?: boolean;
+  discount?: number;
+  tags?: string[];
+  mediaType?: 'image' | 'video';
 }
 
 export interface SizeStockMap {
@@ -95,7 +99,7 @@ export const saveInventoryChanges = (inventory: InventoryItem[]): void => {
     id: item.id,
     name: item.name,
     brand: item.brand,
-    price: item.price || 0, // Add default value
+    price: item.price || 0,
     colors: item.colors,
     sizes: item.sizes,
     images: item.images,
@@ -103,9 +107,13 @@ export const saveInventoryChanges = (inventory: InventoryItem[]): void => {
     featured: item.featured,
     stock: item.stock,
     lowStockThreshold: item.lowStockThreshold,
-    active: item.active !== false, // Default to true if not specified
+    active: item.active !== false,
     displayLocation: item.displayLocation || 'catalog',
-    currency: item.currency || 'USD'
+    currency: item.currency || 'USD',
+    onSale: item.onSale || false,
+    discount: item.discount || 0,
+    tags: item.tags || [],
+    mediaType: item.mediaType || 'image'
   }));
   
   localStorage.setItem('products', JSON.stringify(products));
@@ -230,4 +238,32 @@ export const getInventoryContent = (language: string) => {
         noProducts: "No products found"
       };
   }
+};
+
+// New helper functions for product categories
+export const getProductsByCategory = (category: 'featured' | 'onSale' | 'discount'): InventoryItem[] => {
+  // First try to get from localStorage (updated by admin)
+  const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+  
+  if (storedProducts.length > 0) {
+    switch (category) {
+      case 'featured':
+        return storedProducts.filter((product: InventoryItem) => 
+          product.featured === true && product.active !== false
+        );
+      case 'onSale':
+        return storedProducts.filter((product: InventoryItem) => 
+          product.onSale === true && product.active !== false
+        );
+      case 'discount':
+        return storedProducts.filter((product: InventoryItem) => 
+          product.discount && product.discount > 0 && product.active !== false
+        );
+      default:
+        return storedProducts.filter((product: InventoryItem) => product.active !== false);
+    }
+  }
+  
+  // If no localStorage data, return empty array
+  return [];
 };

@@ -14,6 +14,10 @@ export interface Product {
   category?: string;
   displayLocation?: 'homepage' | 'banner' | 'rotative' | 'catalog' | 'all';
   currency?: string;
+  onSale?: boolean;
+  discount?: number;
+  tags?: string[];
+  mediaType?: 'image' | 'video';
 }
 
 export const products: Product[] = [
@@ -35,7 +39,9 @@ export const products: Product[] = [
     active: true,
     category: "running",
     displayLocation: "homepage",
-    currency: "USD"
+    currency: "USD",
+    onSale: true,
+    tags: ["New", "Running"]
   },
   {
     id: "2",
@@ -55,7 +61,9 @@ export const products: Product[] = [
     active: true,
     category: "running",
     displayLocation: "banner",
-    currency: "USD"
+    currency: "USD",
+    discount: 15,
+    tags: ["Sustainable", "Comfort"]
   },
   {
     id: "3",
@@ -200,6 +208,43 @@ export const getProductsByLocation = (location: 'homepage' | 'banner' | 'rotativ
   
   // Fallback to static data
   return products.filter(product => product.displayLocation === location || location === 'all' || !product.displayLocation);
+};
+
+// Função para obter produtos por categoria especial
+export const getProductsBySpecialCategory = (category: 'featured' | 'onSale' | 'discount'): Product[] => {
+  // First try to get from localStorage (updated by admin)
+  const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+  
+  if (storedProducts.length > 0) {
+    switch (category) {
+      case 'featured':
+        return storedProducts.filter(product => 
+          product.featured === true && product.active !== false
+        );
+      case 'onSale':
+        return storedProducts.filter(product => 
+          product.onSale === true && product.active !== false
+        );
+      case 'discount':
+        return storedProducts.filter(product => 
+          product.discount && product.discount > 0 && product.active !== false
+        );
+      default:
+        return storedProducts.filter(product => product.active !== false);
+    }
+  }
+  
+  // Fallback to static data
+  switch (category) {
+    case 'featured':
+      return products.filter(product => product.featured);
+    case 'onSale':
+      return products.filter(product => product.onSale);
+    case 'discount':
+      return products.filter(product => product.discount && product.discount > 0);
+    default:
+      return products;
+  }
 };
 
 export const getAllProducts = (): Product[] => {
