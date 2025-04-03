@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -43,7 +42,12 @@ const Hero = ({ products }: HeroProps) => {
   };
   
   const handleAddToCart = (product: Product) => {
-    addToCart(product, product.sizes[0], 1);
+    // Fix the type issue by converting product.sizes[0] to a number if it's not already
+    const firstSize = typeof product.sizes[0] === 'string' 
+      ? parseFloat(product.sizes[0]) 
+      : product.sizes[0];
+      
+    addToCart(product, firstSize, 1);
     toast.success(`${product.name} added to cart!`);
   };
 
