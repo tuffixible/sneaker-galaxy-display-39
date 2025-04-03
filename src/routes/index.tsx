@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from "react";
 import AdminLayout from "../components/admin/AdminLayout";
 
@@ -52,10 +51,6 @@ const Inventory = lazyLoad(() => import("../pages/admin/inventory"));
 export const routes = [
   {
     path: "/",
-    element: <Index />,
-  },
-  {
-    path: "/inicio",
     element: <Index />,
   },
   {
