@@ -8,6 +8,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { EditableText } from './editable/EditableText';
+import { useEditMode } from '@/contexts/EditModeContext';
 
 interface HeroProps {
   products: Product[];
@@ -72,6 +74,8 @@ const Hero = ({ products }: HeroProps) => {
 
   if (!products.length) return null;
 
+  const { isEditing } = useEditMode();
+
   return (
     <section className="relative min-h-[90vh] pt-24 flex items-center overflow-hidden">
       {/* Background with animated gradient */}
@@ -86,11 +90,17 @@ const Hero = ({ products }: HeroProps) => {
 
       <div className="container max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-8 px-6 md:px-8 relative z-10">
         <div className="flex flex-col justify-center pt-12 md:pt-0 order-2 md:order-1">
-          {/* Store Name with Animation */}
           <div className="mb-8">
-            <h2 className="text-xl font-medium text-primary animate-fade-in opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-              Xible Shoes
-            </h2>
+            <EditableText
+              content="Xible Shoes"
+              className="text-xl font-medium text-primary animate-fade-in opacity-0"
+              isEditing={isEditing}
+              onSave={(text) => {
+                const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+                localStorage.setItem('storeSettings', JSON.stringify({ ...settings, name: text }));
+                window.dispatchEvent(new Event('storeSettingsUpdated'));
+              }}
+            />
           </div>
           
           <div className="space-y-6">

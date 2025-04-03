@@ -2,10 +2,13 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { EditableText } from './editable/EditableText';
+import { useEditMode } from '@/contexts/EditModeContext';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { t, language } = useLanguage();
+  const { isEditing } = useEditMode();
   
   // Translated description based on current language
   const getDescription = () => {
@@ -25,10 +28,26 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
             <Link to="/" className="text-2xl font-bold tracking-tight">
-              Xible Store
+              <EditableText 
+                content="Xible Store" 
+                onSave={(text) => {
+                  const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+                  localStorage.setItem('storeSettings', JSON.stringify({ ...settings, name: text }));
+                  window.dispatchEvent(new Event('storeSettingsUpdated'));
+                }}
+                isEditing={isEditing}
+              />
             </Link>
             <p className="mt-4 text-white/80 max-w-md">
-              {getDescription()}
+              <EditableText 
+                content={getDescription()} 
+                onSave={(text) => {
+                  const content = JSON.parse(localStorage.getItem('siteContent') || '{}');
+                  localStorage.setItem('siteContent', JSON.stringify({ ...content, footerDescription: text }));
+                  window.dispatchEvent(new Event('siteContentUpdated'));
+                }}
+                isEditing={isEditing}
+              />
             </p>
             <div className="mt-6 flex space-x-4">
               <a 

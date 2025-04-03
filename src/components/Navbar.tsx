@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, Search } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEditMode } from '@/contexts/EditModeContext';
+import { EditableLink } from './editable/EditableLink';
 import LanguageSelector from './LanguageSelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -70,6 +71,8 @@ const Navbar = () => {
     }
   };
 
+  const { isEditing } = useEditMode();
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isSticky ? 'bg-background shadow-md py-2' : 'bg-background/80 backdrop-blur-lg py-4'
@@ -83,24 +86,32 @@ const Navbar = () => {
               alt={storeName} 
               className="h-10 w-auto object-contain" 
               onError={(e) => {
-                // Fallback to default logo if custom logo fails to load
                 const target = e.target as HTMLImageElement;
-                target.src = '/logo.svg'; 
-                console.log('Error loading custom logo, falling back to default');
+                target.src = '/logo.svg';
               }}
             />
-            <span className="text-lg font-semibold hidden sm:block">{storeName}</span>
+            <EditableLink 
+              to="/"
+              className="text-lg font-semibold hidden sm:block"
+              isEditing={isEditing}
+              onSave={(text) => {
+                setStoreName(text);
+                localStorage.setItem('storeSettings', JSON.stringify({ ...JSON.parse(localStorage.getItem('storeSettings') || '{}'), name: text }));
+              }}
+            >
+              {storeName}
+            </EditableLink>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">{t('home') || 'Home'}</Link>
-            <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog') || 'Catalog'}</Link>
-            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about') || 'About Us'}</Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact') || 'Contact'}</Link>
+            <EditableLink to="/" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navHome')}</EditableLink>
+            <EditableLink to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navCatalog')}</EditableLink>
+            <EditableLink to="/about" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navAbout')}</EditableLink>
+            <EditableLink to="/contact" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navContact')}</EditableLink>
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                {t('admin') || 'Admin'}
+                Admin
               </Link>
             )}
           </div>

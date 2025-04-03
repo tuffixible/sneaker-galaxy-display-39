@@ -1,8 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEditMode } from '@/contexts/EditModeContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -11,20 +12,20 @@ interface EditContentButtonProps {
 }
 
 const EditContentButton: React.FC<EditContentButtonProps> = ({ pageId }) => {
-  const [isEditing, setIsEditing] = React.useState(false);
+  const { isEditing, setIsEditing } = useEditMode();
   const { isAuthenticated, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if current page can be edited
-  const editablePaths = ['/', '/about', '/contact']; // Add paths that can be edited
-  const isEditablePath = editablePaths.includes(location.pathname);
+  // All paths are now editable
+  const isEditablePath = true;
 
   const handleToggleEdit = () => {
+    setIsEditing(!isEditing);
+    
     if (!isEditing) {
       // Starting edit mode
-      setIsEditing(true);
       window.dispatchEvent(new CustomEvent('startContentEditing', { detail: { pageId } }));
       
       toast({
@@ -33,7 +34,6 @@ const EditContentButton: React.FC<EditContentButtonProps> = ({ pageId }) => {
       });
     } else {
       // Ending edit mode - trigger save event
-      setIsEditing(false);
       window.dispatchEvent(new CustomEvent('saveContentEditing', { detail: { pageId } }));
       
       toast({
@@ -56,11 +56,6 @@ const EditContentButton: React.FC<EditContentButtonProps> = ({ pageId }) => {
   const goToAdmin = () => {
     navigate('/admin/site-content');
   };
-
-  // Reset edit mode when changing pages
-  useEffect(() => {
-    setIsEditing(false);
-  }, [location.pathname]);
 
   if (!isAuthenticated || !isAdmin || !isEditablePath) return null;
 

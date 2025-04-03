@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -14,8 +13,11 @@ import { useInView } from '@/lib/animations';
 import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useThemeColors } from '@/hooks/use-theme-colors';
+import { EditModeProvider } from '@/contexts/EditModeContext';
 
 const Index = () => {
+  const colors = useThemeColors();
   const { language } = useLanguage();
   const { isAuthenticated, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -241,6 +243,14 @@ const Index = () => {
       </div>
     );
   };
+
+  useEffect(() => {
+    // Apply theme colors
+    document.documentElement.style.setProperty('--primary', colors.primary);
+    document.documentElement.style.setProperty('--secondary', colors.secondary);
+    document.documentElement.style.setProperty('--accent', colors.accent);
+    document.documentElement.style.setProperty('--background', colors.background);
+  }, [colors]);
 
   return (
     <div className="min-h-screen">
