@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -12,10 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { getAllProducts, Product } from '@/data/products';
 import { getCurrencies } from './inventory/InventoryUtils';
-import { Save } from 'lucide-react';
+import { Save, Image as ImageIcon } from 'lucide-react';
 
 const SiteContent = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const currencies = getCurrencies();
   
@@ -312,11 +311,20 @@ const SiteContent = () => {
     }
   };
   
+  // Adicionar uma seção para upload de imagens com informações de formatos compatíveis
+  const imageFormatInfo = () => (
+    <div className="mt-2 text-xs text-muted-foreground flex items-center">
+      <ImageIcon className="h-3 w-3 mr-1" />
+      {t('adminImageFormats')}
+    </div>
+  );
+  
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">{content.title}</h2>
         <p className="text-muted-foreground">{content.description}</p>
+        {imageFormatInfo()}
       </div>
       
       <Tabs defaultValue="store" className="space-y-4">

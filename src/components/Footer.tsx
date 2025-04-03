@@ -20,14 +20,14 @@ const Footer = () => {
   };
   
   return (
-    <footer className="bg-secondary py-16 px-6 md:px-8">
+    <footer className="bg-emerald-green text-white py-16 px-6 md:px-8">
       <div className="container max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
             <Link to="/" className="text-2xl font-bold tracking-tight">
               Xible Store
             </Link>
-            <p className="mt-4 text-muted-foreground max-w-md">
+            <p className="mt-4 text-white/80 max-w-md">
               {getDescription()}
             </p>
             <div className="mt-6 flex space-x-4">
@@ -35,7 +35,7 @@ const Footer = () => {
                 href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-background text-foreground transition-all hover:bg-foreground hover:text-background"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white hover:text-emerald-green"
                 aria-label="Instagram"
               >
                 <Instagram size={18} />
@@ -44,7 +44,7 @@ const Footer = () => {
                 href="https://facebook.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-background text-foreground transition-all hover:bg-foreground hover:text-background"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white hover:text-emerald-green"
                 aria-label="Facebook"
               >
                 <Facebook size={18} />
@@ -53,7 +53,7 @@ const Footer = () => {
                 href="https://twitter.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-background text-foreground transition-all hover:bg-foreground hover:text-background"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white hover:text-emerald-green"
                 aria-label="Twitter"
               >
                 <Twitter size={18} />
@@ -65,22 +65,22 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">{t('footerNavigation')}</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/" className="text-white/80 hover:text-white transition-colors">
                   {t('navHome')}
                 </Link>
               </li>
               <li>
-                <Link to="/catalogo" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/catalogo" className="text-white/80 hover:text-white transition-colors">
                   {t('navCatalog')}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/about" className="text-white/80 hover:text-white transition-colors">
                   {t('navAbout')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/contact" className="text-white/80 hover:text-white transition-colors">
                   {t('navContact')}
                 </Link>
               </li>
@@ -91,22 +91,22 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">{t('footerCustomerCare')}</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/shipping" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/shipping" className="text-white/80 hover:text-white transition-colors">
                   {t('footerShippingInfo')}
                 </Link>
               </li>
               <li>
-                <Link to="/returns" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/returns" className="text-white/80 hover:text-white transition-colors">
                   {t('footerReturns')}
                 </Link>
               </li>
               <li>
-                <Link to="/size-guide" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/size-guide" className="text-white/80 hover:text-white transition-colors">
                   {t('footerSizeGuide')}
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/faq" className="text-white/80 hover:text-white transition-colors">
                   {t('footerFAQ')}
                 </Link>
               </li>
@@ -114,7 +114,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+        <div className="mt-16 pt-8 border-t border-white/20 text-center text-sm text-white/80">
           <p>© {currentYear} Xible Store. {t('footerRights')}</p>
         </div>
       </div>

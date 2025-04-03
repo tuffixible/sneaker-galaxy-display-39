@@ -17,10 +17,12 @@ import {
   Store,
   Users,
   ScrollText,
-  Database
+  Database,
+  Image
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LanguageSelector from '../LanguageSelector';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const AdminSidebar = () => {
   const { logout, user } = useAuth();
@@ -161,6 +163,24 @@ const AdminSidebar = () => {
               {!isCollapsed && <span>{link.name}</span>}
             </Link>
           ))}
+          
+          {/* Informação sobre formatos de imagem */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={cn(
+                  "flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground mt-4",
+                  isCollapsed ? "justify-center" : ""
+                )}>
+                  <Image size={20} />
+                  {!isCollapsed && <span className="text-xs">{t('adminImageFormats')}</span>}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{t('adminImageFormats')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         <div className="p-4 border-t space-y-4">

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define available languages
@@ -26,7 +25,7 @@ export const translations: Translations = {
   },
   navAbout: {
     en: 'About',
-    pt: 'Sobre',
+    pt: 'Sobre nós',
     es: 'Acerca de'
   },
   navContact: {
@@ -122,6 +121,12 @@ export const translations: Translations = {
     en: 'Language',
     pt: 'Idioma',
     es: 'Idioma'
+  },
+  // Admin
+  adminImageFormats: {
+    en: 'Compatible image formats: JPG, JPEG, PNG, GIF, WEBP and SVG',
+    pt: 'Formatos de imagem compatíveis: JPG, JPEG, PNG, GIF, WEBP e SVG',
+    es: 'Formatos de imagen compatibles: JPG, JPEG, PNG, GIF, WEBP y SVG'
   }
 };
 
