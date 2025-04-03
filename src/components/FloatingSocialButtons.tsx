@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageCircle, Instagram } from 'lucide-react';
+import { MessageCircle, Instagram, Phone } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface FloatingSocialButtonsProps {
@@ -64,6 +64,7 @@ const FloatingSocialButtons: React.FC<FloatingSocialButtonsProps> = ({
         size="circle"
         animation="bounce"
         aria-label="Chat no WhatsApp"
+        className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg transform transition-transform hover:scale-110"
       >
         <MessageCircle size={24} />
       </Button>
@@ -74,6 +75,7 @@ const FloatingSocialButtons: React.FC<FloatingSocialButtonsProps> = ({
         size="circle"
         animation="scale"
         aria-label="Siga no Instagram"
+        className="bg-gradient-to-tr from-purple-600 to-pink-500 text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg transform transition-transform hover:scale-110"
       >
         <Instagram size={24} />
       </Button>

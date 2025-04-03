@@ -15,7 +15,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { cartItems, totalItems } = useCart();
   const { t } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -74,7 +74,7 @@ const Navbar = () => {
           <Link to="/" className="flex-shrink-0">
             <img 
               src={logo} 
-              alt="Xible Store" 
+              alt="Xible Shoes" 
               className="h-10 w-auto object-contain" 
               onError={(e) => {
                 // Fallback to default logo if custom logo fails to load
@@ -87,9 +87,15 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">{t('home') || 'Início'}</Link>
             <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog')}</Link>
             <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about')}</Link>
             <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact')}</Link>
+            {isAdmin && (
+              <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                {t('admin') || 'Admin'}
+              </Link>
+            )}
           </div>
 
           {/* Search & Cart */}
@@ -151,9 +157,16 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-background border-t border-border/10 px-4 py-6">
           <div className="flex flex-col space-y-4">
+            <Link to="/" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('home') || 'Início'}</Link>
             <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog')}</Link>
             <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about')}</Link>
             <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact')}</Link>
+            
+            {isAdmin && (
+              <Link to="/admin" className="text-sm font-medium text-primary" onClick={() => setIsMenuOpen(false)}>
+                {t('admin') || 'Admin'}
+              </Link>
+            )}
             
             {isAuthenticated ? (
               <Link to="/profile" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('profile')}</Link>

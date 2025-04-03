@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import CatalogGrid from '@/components/CatalogGrid';
@@ -9,14 +9,33 @@ import { getProductsByLocation, getFeaturedProducts } from '@/data/products';
 import { getProductsByCategory } from '@/pages/admin/inventory/InventoryUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Product } from '@/data/products';
+import { useAuth } from '@/contexts/AuthContext';
+import { useInView } from '@/lib/animations';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const Index = () => {
   const { language } = useLanguage();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const { toast } = useToast();
   const [featuredProducts, setFeaturedProducts] = useState(getFeaturedProducts());
   const [homepageProducts, setHomepageProducts] = useState(getProductsByLocation('homepage'));
   const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([]);
   const [discountProducts, setDiscountProducts] = useState<Product[]>([]);
   const [siteContent, setSiteContent] = useState<any>({});
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Refs for scroll animations
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const onSaleRef = useRef<HTMLDivElement>(null);
+  const discountRef = useRef<HTMLDivElement>(null);
+  const catalogRef = useRef<HTMLDivElement>(null);
+  
+  const featuredInView = useInView(featuredRef, { threshold: 0.2 });
+  const onSaleInView = useInView(onSaleRef, { threshold: 0.2 });
+  const discountInView = useInView(discountRef, { threshold: 0.2 });
+  const catalogInView = useInView(catalogRef, { threshold: 0.2 });
   
   // Get translations based on language
   const getContent = () => {
@@ -71,6 +90,39 @@ const Index = () => {
           catalogTitle: "Our Collection",
           catalogSubtitle: "Discover our premium selection of sneakers from the world's best brands"
         };
+    }
+  };
+  
+  // Save content changes when in edit mode
+  const handleContentSave = (section: string, newTitle: string, newSubtitle: string) => {
+    const updatedContent = {
+      ...siteContent,
+      [`${section}Title`]: newTitle,
+      [`${section}Subtitle`]: newSubtitle,
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('siteContent', JSON.stringify(updatedContent));
+    setSiteContent(updatedContent);
+    
+    // Dispatch event for other components
+    window.dispatchEvent(new Event('siteContentUpdated'));
+    
+    toast({
+      title: "Conteúdo atualizado",
+      description: "As alterações foram salvas com sucesso",
+    });
+  };
+  
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    setIsEditing(!isEditing);
+    
+    if (!isEditing) {
+      toast({
+        title: "Modo de edição ativado",
+        description: "Clique nos textos para editá-los",
+      });
     }
   };
   
@@ -135,6 +187,61 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // EditableSection component for admin editing
+  const EditableSection = ({ id, title, subtitle, onSave }: { 
+    id: string, 
+    title: string, 
+    subtitle: string,
+    onSave: (title: string, subtitle: string) => void 
+  }) => {
+    const [editingTitle, setEditingTitle] = useState(title);
+    const [editingSubtitle, setEditingSubtitle] = useState(subtitle);
+    const [isEditingThis, setIsEditingThis] = useState(false);
+    
+    const handleClick = () => {
+      if (isEditing && !isEditingThis) {
+        setIsEditingThis(true);
+        setEditingTitle(title);
+        setEditingSubtitle(subtitle);
+      }
+    };
+    
+    const handleSave = () => {
+      onSave(editingTitle, editingSubtitle);
+      setIsEditingThis(false);
+    };
+    
+    return (
+      <div className={`text-center max-w-3xl mx-auto mb-12 ${isEditingThis ? 'border-2 border-dashed border-primary p-4 rounded-lg' : ''}`} onClick={handleClick}>
+        {isEditingThis ? (
+          <>
+            <input 
+              type="text" 
+              value={editingTitle} 
+              onChange={(e) => setEditingTitle(e.target.value)} 
+              className="text-3xl md:text-4xl font-bold mb-2 w-full text-center border-b border-primary bg-transparent focus:outline-none"
+            />
+            <textarea 
+              value={editingSubtitle} 
+              onChange={(e) => setEditingSubtitle(e.target.value)}
+              className="text-muted-foreground w-full text-center bg-transparent focus:outline-none resize-none"
+              rows={2}
+            />
+            <div className="mt-4 flex justify-center gap-2">
+              <Button size="sm" onClick={handleSave}>Salvar</Button>
+              <Button size="sm" variant="outline" onClick={() => setIsEditingThis(false)}>Cancelar</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">{title}</h2>
+            <p className="text-muted-foreground">{subtitle}</p>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -142,35 +249,113 @@ const Index = () => {
       <main>
         <Hero products={featuredProducts} />
         
+        {/* Admin Edit Toggle */}
+        {isAdmin && isAuthenticated && (
+          <div className="fixed top-24 right-6 z-40">
+            <Button 
+              onClick={toggleEditMode} 
+              size="sm" 
+              className={`${isEditing ? 'bg-primary' : 'bg-muted'} transition-colors`}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {isEditing ? 'Editing Mode: ON' : 'Edit Content'}
+            </Button>
+          </div>
+        )}
+        
+        {/* Featured Products Section */}
         {featuredProducts.length > 0 && (
-          <CatalogGrid 
-            products={featuredProducts} 
-            title={content.featuredTitle}
-            subtitle={content.featuredSubtitle}
-          />
+          <section 
+            ref={featuredRef} 
+            className={`py-16 px-4 transition-opacity duration-1000 ${featuredInView ? 'opacity-100' : 'opacity-0'}`}
+          >
+            {isAdmin && isEditing ? (
+              <EditableSection 
+                id="featured"
+                title={content.featuredTitle}
+                subtitle={content.featuredSubtitle}
+                onSave={(title, subtitle) => handleContentSave('featured', title, subtitle)}
+              />
+            ) : (
+              <div className="text-center max-w-3xl mx-auto mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-2">{content.featuredTitle}</h2>
+                <p className="text-muted-foreground">{content.featuredSubtitle}</p>
+              </div>
+            )}
+            
+            <CatalogGrid products={featuredProducts} />
+          </section>
         )}
         
+        {/* On Sale Products Section */}
         {onSaleProducts.length > 0 && (
-          <CatalogGrid 
-            products={onSaleProducts} 
-            title={content.onSaleTitle}
-            subtitle={content.onSaleSubtitle}
-          />
+          <section 
+            ref={onSaleRef} 
+            className={`py-16 px-4 bg-muted/50 transition-opacity duration-1000 ${onSaleInView ? 'opacity-100' : 'opacity-0'}`}
+          >
+            {isAdmin && isEditing ? (
+              <EditableSection 
+                id="onSale"
+                title={content.onSaleTitle}
+                subtitle={content.onSaleSubtitle}
+                onSave={(title, subtitle) => handleContentSave('onSale', title, subtitle)}
+              />
+            ) : (
+              <div className="text-center max-w-3xl mx-auto mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-2">{content.onSaleTitle}</h2>
+                <p className="text-muted-foreground">{content.onSaleSubtitle}</p>
+              </div>
+            )}
+            
+            <CatalogGrid products={onSaleProducts} />
+          </section>
         )}
         
+        {/* Discount Products Section */}
         {discountProducts.length > 0 && (
-          <CatalogGrid 
-            products={discountProducts} 
-            title={content.discountTitle}
-            subtitle={content.discountSubtitle}
-          />
+          <section 
+            ref={discountRef} 
+            className={`py-16 px-4 transition-opacity duration-1000 ${discountInView ? 'opacity-100' : 'opacity-0'}`}
+          >
+            {isAdmin && isEditing ? (
+              <EditableSection 
+                id="discount"
+                title={content.discountTitle}
+                subtitle={content.discountSubtitle}
+                onSave={(title, subtitle) => handleContentSave('discount', title, subtitle)}
+              />
+            ) : (
+              <div className="text-center max-w-3xl mx-auto mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-2">{content.discountTitle}</h2>
+                <p className="text-muted-foreground">{content.discountSubtitle}</p>
+              </div>
+            )}
+            
+            <CatalogGrid products={discountProducts} />
+          </section>
         )}
         
-        <CatalogGrid 
-          products={homepageProducts} 
-          title={content.catalogTitle}
-          subtitle={content.catalogSubtitle}
-        />
+        {/* Regular Catalog Section */}
+        <section 
+          ref={catalogRef} 
+          className={`py-16 px-4 bg-muted/30 transition-opacity duration-1000 ${catalogInView ? 'opacity-100' : 'opacity-0'}`}
+        >
+          {isAdmin && isEditing ? (
+            <EditableSection 
+              id="homepage"
+              title={content.catalogTitle}
+              subtitle={content.catalogSubtitle}
+              onSave={(title, subtitle) => handleContentSave('homepage', title, subtitle)}
+            />
+          ) : (
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-2">{content.catalogTitle}</h2>
+              <p className="text-muted-foreground">{content.catalogSubtitle}</p>
+            </div>
+          )}
+          
+          <CatalogGrid products={homepageProducts} />
+        </section>
       </main>
       
       <Footer />

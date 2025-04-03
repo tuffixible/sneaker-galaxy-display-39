@@ -30,7 +30,7 @@ const queryClient = new QueryClient({
 const App = () => {
   // State for store settings
   const [storeSettings, setStoreSettings] = useState({
-    name: 'Xible Store',
+    name: 'Xible Shoes',
     favicon: '/logo.svg',
     logo: '/logo.svg',
     socialLinks: {
@@ -72,7 +72,7 @@ const App = () => {
         if (event.detail.field === 'favicon') {
           updateFavicon(event.detail.value);
         } else if (event.detail.field === 'name') {
-          document.title = event.detail.value || 'Xible Store';
+          document.title = event.detail.value || 'Xible Shoes';
         } else if (event.detail.field === 'logo') {
           // The logo is handled in components using storeSettings
           console.log('Logo updated:', event.detail.value);
@@ -102,7 +102,7 @@ const App = () => {
     }
     
     // Update title
-    document.title = settings.name || 'Xible Store';
+    document.title = settings.name || 'Xible Shoes';
     
     // You could also update other meta tags here if needed
     const metaDescription = document.querySelector('meta[name="description"]');

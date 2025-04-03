@@ -1,12 +1,37 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Box, ShoppingBag, Users, Activity, TrendingUp, TrendingDown, QrCode } from 'lucide-react';
+import { 
+  DollarSign, Box, ShoppingBag, Users, Activity, 
+  TrendingUp, TrendingDown, QrCode, CameraOff, 
+  Edit, RefreshCw, Settings, Save 
+} from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { language } = useLanguage();
+  const { isAdmin } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // States for dashboard stats and data
+  const [storeSettings, setStoreSettings] = useState<any>({});
+  const [salesStats, setSalesStats] = useState({
+    totalRevenue: 86429.78,
+    orderCount: 1845,
+    productCount: 185,
+    customerCount: 5678,
+    revenueChange: 12.5,
+    orderChange: 8.2,
+    productChange: 5.1,
+    customerChange: -2.3,
+  });
+  const [isLoading, setIsLoading] = useState(false);
   
   // Multilingual content
   const getDashboardContent = () => {
@@ -43,7 +68,15 @@ const Dashboard = () => {
           pix: "PIX",
           bankTransfer: "Transferência Bancária",
           paypal: "PayPal",
-          cash: "Dinheiro"
+          cash: "Dinheiro",
+          updateSettings: "Atualizar Configurações",
+          refreshData: "Atualizar Dados",
+          manageProducts: "Gerenciar Produtos",
+          viewWebsite: "Visualizar Site",
+          edit: "Editar",
+          save: "Salvar",
+          editingStore: "Editando configurações da loja",
+          storeConfig: "Configurações da Loja"
         };
       case 'es':
         return {
@@ -77,7 +110,15 @@ const Dashboard = () => {
           pix: "PIX",
           bankTransfer: "Transferencia Bancaria",
           paypal: "PayPal",
-          cash: "Efectivo"
+          cash: "Efectivo",
+          updateSettings: "Actualizar Configuración",
+          refreshData: "Actualizar Datos",
+          manageProducts: "Administrar Productos",
+          viewWebsite: "Ver Sitio Web",
+          edit: "Editar",
+          save: "Guardar",
+          editingStore: "Editando configuración de la tienda",
+          storeConfig: "Configuración de la Tienda"
         };
       default: // 'en'
         return {
@@ -111,7 +152,15 @@ const Dashboard = () => {
           pix: "PIX",
           bankTransfer: "Bank Transfer",
           paypal: "PayPal",
-          cash: "Cash"
+          cash: "Cash",
+          updateSettings: "Update Settings",
+          refreshData: "Refresh Data",
+          manageProducts: "Manage Products",
+          viewWebsite: "View Website",
+          edit: "Edit",
+          save: "Save",
+          editingStore: "Editing store settings",
+          storeConfig: "Store Settings"
         };
     }
   };
@@ -177,64 +226,168 @@ const Dashboard = () => {
   const stats = [
     {
       title: content.revenue,
-      value: "$86,429.78",
-      change: "+12.5%",
-      isIncrease: true,
+      value: `$${salesStats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: `${salesStats.revenueChange > 0 ? '+' : ''}${salesStats.revenueChange}%`,
+      isIncrease: salesStats.revenueChange > 0,
       icon: DollarSign,
       color: "text-green-500"
     },
     {
       title: content.orders,
-      value: "1,845",
-      change: "+8.2%",
-      isIncrease: true,
+      value: salesStats.orderCount.toLocaleString(),
+      change: `${salesStats.orderChange > 0 ? '+' : ''}${salesStats.orderChange}%`,
+      isIncrease: salesStats.orderChange > 0,
       icon: ShoppingBag,
       color: "text-blue-500"
     },
     {
       title: content.products,
-      value: "185",
-      change: "+5.1%",
-      isIncrease: true,
+      value: salesStats.productCount.toLocaleString(),
+      change: `${salesStats.productChange > 0 ? '+' : ''}${salesStats.productChange}%`,
+      isIncrease: salesStats.productChange > 0,
       icon: Box,
       color: "text-purple-500"
     },
     {
       title: content.customers,
-      value: "5,678",
-      change: "-2.3%",
-      isIncrease: false,
+      value: salesStats.customerCount.toLocaleString(),
+      change: `${salesStats.customerChange > 0 ? '+' : ''}${salesStats.customerChange}%`,
+      isIncrease: salesStats.customerChange > 0,
       icon: Users,
       color: "text-orange-500"
     }
   ];
   
+  // Load store settings
+  const loadStoreSettings = useCallback(() => {
+    const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+    setStoreSettings(settings);
+  }, []);
+  
+  // Handle saving store settings
+  const saveStoreSettings = useCallback((updatedSettings: any) => {
+    localStorage.setItem('storeSettings', JSON.stringify(updatedSettings));
+    setStoreSettings(updatedSettings);
+    
+    // Trigger update event
+    window.dispatchEvent(new CustomEvent('storeSettingsUpdated', { detail: { type: 'all' } }));
+    
+    toast({
+      title: "Configurações salvas",
+      description: "As configurações da loja foram atualizadas com sucesso",
+    });
+  }, [toast]);
+  
+  // Refresh dashboard stats
+  const refreshStats = () => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      // Generate new random changes
+      const newRevenueChange = +(Math.random() * 20 - 5).toFixed(1);
+      const newOrderChange = +(Math.random() * 15 - 3).toFixed(1);
+      const newProductChange = +(Math.random() * 10 - 2).toFixed(1);
+      const newCustomerChange = +(Math.random() * 8 - 4).toFixed(1);
+      
+      // Update stats with changes
+      setSalesStats(prev => ({
+        ...prev,
+        revenueChange: newRevenueChange,
+        orderChange: newOrderChange,
+        productChange: newProductChange,
+        customerChange: newCustomerChange,
+      }));
+      
+      setIsLoading(false);
+      
+      toast({
+        title: "Dados atualizados",
+        description: "Os dados do painel foram atualizados com sucesso",
+      });
+    }, 1500);
+  };
+  
+  // Quick action handlers
+  const goToProductManagement = () => {
+    navigate('/admin/products');
+  };
+  
+  const goToSiteConfig = () => {
+    navigate('/admin/site-config');
+  };
+  
+  const viewWebsite = () => {
+    window.open('/', '_blank');
+  };
+  
+  // Load store settings on component mount
+  useEffect(() => {
+    loadStoreSettings();
+    
+    // Listen for store settings updates
+    const handleSettingsUpdate = () => {
+      loadStoreSettings();
+    };
+    
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
+  }, [loadStoreSettings]);
+  
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{content.title}</h2>
-          <p className="text-muted-foreground">{content.welcome}</p>
+          <h2 className="text-3xl font-bold tracking-tight animate-fade-in">{content.title}</h2>
+          <p className="text-muted-foreground animate-fade-in opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>{content.welcome}</p>
         </div>
         
-        {/* Store logo display */}
-        <div className="flex items-center gap-3 bg-card p-2 rounded-md border">
-          <img 
-            src="/logo.svg" 
-            alt="Store Logo" 
-            className="h-10 w-10"
-          />
-          <div>
-            <p className="font-semibold text-sm">Xible Store</p>
-            <p className="text-xs text-muted-foreground">Premium shoes for everyone</p>
-          </div>
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={refreshStats}
+            disabled={isLoading}
+            className="animate-fade-in opacity-0" 
+            style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+          >
+            {isLoading ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            {content.refreshData}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={goToProductManagement}
+            className="animate-fade-in opacity-0" 
+            style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
+          >
+            <Box className="h-4 w-4 mr-2" />
+            {content.manageProducts}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="default" 
+            onClick={viewWebsite}
+            className="animate-fade-in opacity-0" 
+            style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
+          >
+            {content.viewWebsite}
+          </Button>
         </div>
       </div>
       
       {/* Stats cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
-          <Card key={i}>
+          <Card key={i} className="animate-fade-in opacity-0" style={{ animationDelay: `${0.1 * (i + 1)}s`, animationFillMode: 'forwards' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {stat.title}
@@ -258,11 +411,68 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Store Settings Card */}
+      <Card className="animate-fade-in opacity-0" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>{content.storeConfig}</CardTitle>
+            <CardDescription>
+              {content.summary}
+            </CardDescription>
+          </div>
+          <Button size="sm" variant="outline" onClick={goToSiteConfig}>
+            <Settings className="h-4 w-4 mr-2" />
+            {content.updateSettings}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Nome da Loja</h4>
+                <p className="text-lg font-medium">{storeSettings.name || 'Xible Shoes'}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">WhatsApp</h4>
+                <p>{storeSettings.socialLinks?.whatsapp || '5511999999999'}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">Instagram</h4>
+                <p>{storeSettings.socialLinks?.instagram || 'xiblestore'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <h4 className="text-sm font-medium mb-2">Logo da Loja</h4>
+                {storeSettings.logo ? (
+                  <img 
+                    src={storeSettings.logo} 
+                    alt="Logo" 
+                    className="h-24 w-auto object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/logo.svg';
+                    }}
+                  />
+                ) : (
+                  <div className="h-24 w-24 bg-muted rounded-md flex items-center justify-center">
+                    <CameraOff className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Charts section */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Sales Overview */}
-        <Card className="col-span-1">
+        <Card className="col-span-1 animate-fade-in opacity-0" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
           <CardHeader>
             <CardTitle>{content.salesOverview}</CardTitle>
             <CardDescription>{content.thisMonth}</CardDescription>
@@ -284,7 +494,7 @@ const Dashboard = () => {
         </Card>
         
         {/* Weekly Sales */}
-        <Card className="col-span-1">
+        <Card className="col-span-1 animate-fade-in opacity-0" style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}>
           <CardHeader>
             <CardTitle>{content.salesTitle}</CardTitle>
             <CardDescription>{content.thisWeek}</CardDescription>
@@ -309,7 +519,7 @@ const Dashboard = () => {
       {/* Bottom section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Top Products */}
-        <Card className="col-span-1 md:col-span-2 lg:col-span-1">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-1 animate-fade-in opacity-0" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
           <CardHeader>
             <CardTitle>{content.topProducts}</CardTitle>
           </CardHeader>
@@ -334,7 +544,7 @@ const Dashboard = () => {
         </Card>
         
         {/* Payment Methods */}
-        <Card>
+        <Card className="animate-fade-in opacity-0" style={{ animationDelay: '0.9s', animationFillMode: 'forwards' }}>
           <CardHeader>
             <CardTitle>{content.paymentMethods}</CardTitle>
           </CardHeader>
@@ -365,7 +575,7 @@ const Dashboard = () => {
         </Card>
         
         {/* Order Status */}
-        <Card>
+        <Card className="animate-fade-in opacity-0" style={{ animationDelay: '1s', animationFillMode: 'forwards' }}>
           <CardHeader>
             <CardTitle>{content.orderStatus}</CardTitle>
           </CardHeader>

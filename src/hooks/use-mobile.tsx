@@ -1,19 +1,59 @@
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState<boolean>(false)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
+    // Initialize value on mount
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    
+    const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize)
+    
+    // Remove event listener on cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
-  return !!isMobile
+  return isMobile
+}
+
+export function useViewportSize() {
+  const [size, setSize] = React.useState({
+    width: 0,
+    height: 0
+  })
+
+  React.useEffect(() => {
+    // Initialize values on mount
+    setSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
+    
+    const handleResize = () => {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize)
+    
+    // Remove event listener on cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return size
 }
