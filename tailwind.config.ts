@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -66,9 +67,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Novas cores personalizadas
-				'ice-white': '#F5F5F5', // Branco gelo
-				'emerald-green': '#2ecc71' // Verde esmeralda
+				// Cores personalizadas
+				'ice-white': '#edf2f9', // Branco gelo com tom azulado
+				'soft-blue': '#e1e9f5', // Azul suave para backgrounds
+				'light-blue': '#60a5fa', // Azul claro
+				'classic-blue': '#3b82f6', // Azul principal
+				'dark-blue': '#1e40af', // Azul escuro
+				'light-gray': '#f5f7fa', // Cinza claro
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -103,6 +108,22 @@ export default {
 				'scale-in': {
 					from: { transform: 'scale(0.95)', opacity: '0' },
 					to: { transform: 'scale(1)', opacity: '1' }
+				},
+				'shimmer': {
+					'0%': {
+						transform: 'translateX(-150%)',
+					},
+					'100%': {
+						transform: 'translateX(150%)',
+					},
+				},
+				'wiggle': {
+					'0%, 100%': {
+						transform: 'rotate(-3deg)',
+					},
+					'50%': {
+						transform: 'rotate(3deg)',
+					},
 				}
 			},
 			animation: {
@@ -112,12 +133,19 @@ export default {
 				'fade-out': 'fade-out 0.3s ease-out',
 				'slide-up': 'slide-up 0.4s ease-out',
 				'slide-down': 'slide-down 0.4s ease-out',
-				'scale-in': 'scale-in 0.3s ease-out'
+				'scale-in': 'scale-in 0.3s ease-out',
+				'shimmer': 'shimmer 2s infinite',
+				'wiggle': 'wiggle 1s ease-in-out infinite',
 			},
 			transitionTimingFunction: {
 				'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
 				'out-quint': 'cubic-bezier(0.22, 1, 0.36, 1)'
-			}
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-subtle': 'linear-gradient(to right bottom, rgb(243 244 246 / 0.8), rgb(209 213 219 / 0.8))',
+				'gradient-blue-subtle': 'linear-gradient(109.6deg, rgba(223,234,247,1) 11.2%, rgba(244,248,252,1) 91.1%)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

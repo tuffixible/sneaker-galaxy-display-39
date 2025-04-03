@@ -10,10 +10,10 @@ interface ThemeColors {
 
 export const useThemeColors = () => {
   const [colors, setColors] = useState<ThemeColors>({
-    primary: '#3b82f6', // Updated to a nicer blue
-    secondary: '#f5f7fa', // Updated to a slightly blue-white
-    accent: '#0ea5e9', // Updated to a lighter blue
-    background: '#f0f5fa' // Updated to an off-white with blue tint
+    primary: '#3b82f6', // Azul principal
+    secondary: '#eef2f7', // Cinza azulado muito claro
+    accent: '#60a5fa', // Azul mais claro para acentos
+    background: '#edf2f9' // Branco gelo com leve tom azulado
   });
 
   useEffect(() => {

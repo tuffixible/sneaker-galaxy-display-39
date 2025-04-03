@@ -48,10 +48,32 @@ export const ThemeProvider: React.FC<{children: ReactNode}> = ({ children }) => 
   
   // Apply theme colors
   useEffect(() => {
+    // Definir cores CSS personalizadas
     document.documentElement.style.setProperty('--primary-color', colors.primary);
     document.documentElement.style.setProperty('--secondary-color', colors.secondary);
     document.documentElement.style.setProperty('--accent-color', colors.accent);
     document.documentElement.style.setProperty('--background-color', colors.background);
+    
+    // Atualizar também algumas variáveis do Tailwind
+    const hslValues = {
+      primary: convertHexToHSL(colors.primary),
+      accent: convertHexToHSL(colors.accent),
+      background: convertHexToHSL(colors.background),
+      secondary: convertHexToHSL(colors.secondary)
+    };
+    
+    if (hslValues.primary) {
+      document.documentElement.style.setProperty('--primary', hslValues.primary);
+    }
+    if (hslValues.accent) {
+      document.documentElement.style.setProperty('--accent', hslValues.accent);
+    }
+    if (hslValues.background) {
+      document.documentElement.style.setProperty('--background', hslValues.background);
+    }
+    if (hslValues.secondary) {
+      document.documentElement.style.setProperty('--secondary', hslValues.secondary);
+    }
   }, [colors]);
   
   return (
@@ -60,6 +82,50 @@ export const ThemeProvider: React.FC<{children: ReactNode}> = ({ children }) => 
     </ThemeContext.Provider>
   );
 };
+
+// Função auxiliar para converter hex para HSL
+function convertHexToHSL(hex: string): string | null {
+  // Remover o # se estiver presente
+  hex = hex.replace(/^#/, '');
+
+  // Converter de hex para RGB
+  let r = parseInt(hex.substring(0, 2), 16) / 255;
+  let g = parseInt(hex.substring(2, 4), 16) / 255;
+  let b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  // Encontrar os valores máximo e mínimo para calcular a luminosidade
+  let max = Math.max(r, g, b);
+  let min = Math.min(r, g, b);
+  
+  let h = 0;
+  let s = 0;
+  let l = (max + min) / 2;
+
+  // Calcular a tonalidade e saturação
+  if (max !== min) {
+    let d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    
+    h = Math.round(h * 60);
+  }
+  
+  s = Math.round(s * 100);
+  l = Math.round(l * 100);
+
+  return `${h} ${s}% ${l}%`;
+}
 
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);

@@ -17,13 +17,13 @@ const buttonVariants = cva(
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow hover:shadow-md",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow hover:shadow-md",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent/10 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         whatsapp: "bg-green-500 text-white hover:bg-green-600 shadow hover:shadow-md",
         instagram: "bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 shadow hover:shadow-md",
         promotion: "bg-blue-500 text-white hover:bg-blue-600 shadow hover:shadow-md",
         discount: "bg-green-500 text-white hover:bg-green-600 shadow hover:shadow-md",
-        featured: "bg-yellow-500 text-white hover:bg-yellow-600 shadow hover:shadow-md",
+        featured: "bg-amber-500 text-white hover:bg-amber-600 shadow hover:shadow-md",
       },
       size: {
         default: "h-10 px-4 py-2",
