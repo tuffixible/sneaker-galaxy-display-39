@@ -124,7 +124,15 @@ export default {
 					'50%': {
 						transform: 'rotate(3deg)',
 					},
-				}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)',
+					},
+					'50%': {
+						transform: 'translateY(-10px)',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -136,6 +144,11 @@ export default {
 				'scale-in': 'scale-in 0.3s ease-out',
 				'shimmer': 'shimmer 2s infinite',
 				'wiggle': 'wiggle 1s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'float-slow': 'float 8s ease-in-out infinite',
+				'float-medium': 'float 6s ease-in-out infinite',
+				'float-fast': 'float 4s ease-in-out infinite',
 			},
 			transitionTimingFunction: {
 				'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',

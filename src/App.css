@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  background-color: var(--background);
+  background-color: var(--background-color);
   transition: all 0.3s ease-in-out;
 }
 
@@ -12,14 +12,17 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Poppins', 'Roboto', sans-serif;
+  line-height: 1.6;
 }
 
 :root {
   --primary-color: #3b82f6;
   --secondary-color: #eef2f7;
-  --accent-color: #3b92f6;
+  --accent-color: #60a5fa;
   --background-color: #edf2f9;
   --foreground: #1e293b;
+  --border-radius: 0.5rem;
 }
 
 .dark {
@@ -37,11 +40,13 @@ body {
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #60a5faaa);
+  filter: drop-shadow(0 0 2em var(--primary-color));
 }
+
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #60a5faaa);
+  filter: drop-shadow(0 0 2em var(--primary-color));
 }
 
 @keyframes logo-spin {
@@ -61,18 +66,99 @@ body {
 
 .card {
   padding: 2em;
-  border-radius: var(--radius);
+  border-radius: var(--border-radius);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.dark .card {
+  background-color: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .read-the-docs {
-  color: hsl(var(--muted-foreground));
+  color: #475569;
+}
+
+.dark .read-the-docs {
+  color: #94a3b8;
+}
+
+/* Enhanced Buttons */
+button, 
+.button {
+  font-weight: 600;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+button:hover,
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+button:active,
+.button:active {
+  transform: translateY(1px);
+}
+
+/* Improved headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.5rem 0 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+}
+
+h2 {
+  font-size: 2rem;
+  color: #334155;
+}
+
+.dark h2 {
+  color: #e2e8f0;
+}
+
+/* Enhanced animations */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
