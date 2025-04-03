@@ -18,20 +18,24 @@ export const useThemeColors = () => {
 
   useEffect(() => {
     const loadColors = () => {
-      const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
-      if (settings.primaryColor || settings.secondaryColor || settings.accentColor) {
-        setColors({
-          primary: settings.primaryColor || colors.primary,
-          secondary: settings.secondaryColor || colors.secondary,
-          accent: settings.accentColor || colors.accent,
-          background: settings.backgroundColor || colors.background
-        });
+      try {
+        const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+        if (settings.primaryColor || settings.secondaryColor || settings.accentColor) {
+          setColors({
+            primary: settings.primaryColor || colors.primary,
+            secondary: settings.secondaryColor || colors.secondary,
+            accent: settings.accentColor || colors.accent,
+            background: settings.backgroundColor || colors.background
+          });
 
-        // Apply colors to CSS variables
-        document.documentElement.style.setProperty('--primary-color', settings.primaryColor || colors.primary);
-        document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || colors.secondary);
-        document.documentElement.style.setProperty('--accent-color', settings.accentColor || colors.accent);
-        document.documentElement.style.setProperty('--background-color', settings.backgroundColor || colors.background);
+          // Apply colors to CSS variables
+          document.documentElement.style.setProperty('--primary-color', settings.primaryColor || colors.primary);
+          document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || colors.secondary);
+          document.documentElement.style.setProperty('--accent-color', settings.accentColor || colors.accent);
+          document.documentElement.style.setProperty('--background-color', settings.backgroundColor || colors.background);
+        }
+      } catch (error) {
+        console.error('Error loading theme colors:', error);
       }
     };
 

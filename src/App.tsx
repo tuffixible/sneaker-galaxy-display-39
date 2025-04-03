@@ -1,11 +1,11 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { EditModeProvider } from './contexts/EditModeContext';
-import { ThemeProvider } from './contexts/ThemeContext';
 import { routes } from './routes';
 import { Toaster } from './components/ui/sonner';
 
