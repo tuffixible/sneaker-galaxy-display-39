@@ -26,7 +26,7 @@ export const translations: Translations = {
   },
   navAbout: {
     en: 'About',
-    pt: 'Sobre nós',
+    pt: 'Sobre',
     es: 'Acerca de'
   },
   navContact: {
@@ -122,33 +122,6 @@ export const translations: Translations = {
     en: 'Language',
     pt: 'Idioma',
     es: 'Idioma'
-  },
-  // Admin
-  adminImageFormats: {
-    en: 'Compatible image formats: JPG, JPEG, PNG, GIF, WEBP and SVG',
-    pt: 'Formatos de imagem compatíveis: JPG, JPEG, PNG, GIF, WEBP e SVG',
-    es: 'Formatos de imagen compatibles: JPG, JPEG, PNG, GIF, WEBP y SVG'
-  },
-  // Added for Edit Mode
-  editModeOn: {
-    en: 'Edit Mode: ON',
-    pt: 'Modo de Edição: ATIVO',
-    es: 'Modo de Edición: ACTIVO'
-  },
-  editContent: {
-    en: 'Edit Content',
-    pt: 'Editar Conteúdo',
-    es: 'Editar Contenido'
-  },
-  saveChanges: {
-    en: 'Save Changes',
-    pt: 'Salvar Alterações',
-    es: 'Guardar Cambios'
-  },
-  cancel: {
-    en: 'Cancel',
-    pt: 'Cancelar',
-    es: 'Cancelar'
   }
 };
 
@@ -156,7 +129,6 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
-  updateTranslation: (key: string, language: Language, value: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -193,37 +165,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translations[key][language] || translations[key]['en'] || key;
   };
 
-  // Update translation
-  const updateTranslation = (key: string, lang: Language, value: string) => {
-    if (translations[key]) {
-      translations[key][lang] = value;
-      // We could save custom translations to localStorage here
-      localStorage.setItem('customTranslations', JSON.stringify({ 
-        [key]: { [lang]: value } 
-      }));
-    }
-  };
-
   // Set HTML lang attribute
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
 
-  // Load custom translations
-  useEffect(() => {
-    const customTranslations = JSON.parse(localStorage.getItem('customTranslations') || '{}');
-    // Apply custom translations
-    Object.keys(customTranslations).forEach(key => {
-      if (translations[key]) {
-        Object.keys(customTranslations[key]).forEach(lang => {
-          translations[key][lang as Language] = customTranslations[key][lang];
-        });
-      }
-    });
-  }, []);
-
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, updateTranslation }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

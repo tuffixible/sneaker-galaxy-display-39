@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -18,13 +17,10 @@ import {
   Store,
   Users,
   ScrollText,
-  Database,
-  Image
+  Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LanguageSelector from '../LanguageSelector';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import AdminSidebarMenu from './AdminSidebarMenu';
 
 const AdminSidebar = () => {
   const { logout, user } = useAuth();
@@ -101,6 +97,13 @@ const AdminSidebar = () => {
     { name: menuItems.settings, icon: Settings, path: '/admin/site-config' }
   ];
   
+  const isActivePath = (path: string) => {
+    if (path === '/admin') {
+      return location.pathname === '/admin';
+    }
+    return location.pathname.startsWith(path);
+  };
+  
   return (
     <>
       {/* Mobile overlay */}
@@ -142,29 +145,23 @@ const AdminSidebar = () => {
           </button>
         </div>
         
-        <AdminSidebarMenu 
-          isCollapsed={isCollapsed}
-          currentPath={location.pathname}
-          menuItems={sidebarLinks}
-        />
-        
-        {/* Informação sobre formatos de imagem */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground mt-4",
-                isCollapsed ? "justify-center" : ""
-              )}>
-                <Image size={20} />
-                {!isCollapsed && <span className="text-xs">{t('adminImageFormats')}</span>}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{t('adminImageFormats')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex flex-col flex-grow p-4 space-y-1 overflow-y-auto">
+          {sidebarLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={cn(
+                "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
+                isActivePath(link.path)
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "hover:bg-muted text-foreground/80"
+              )}
+            >
+              <link.icon size={20} />
+              {!isCollapsed && <span>{link.name}</span>}
+            </Link>
+          ))}
+        </div>
         
         <div className="p-4 border-t space-y-4">
           {!isCollapsed && (

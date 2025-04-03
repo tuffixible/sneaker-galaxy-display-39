@@ -1,25 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, Search } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEditMode } from '@/contexts/EditModeContext';
-import { EditableLink } from './editable/EditableLink';
 import LanguageSelector from './LanguageSelector';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [logo, setLogo] = useState('/logo.svg');
-  const [storeName, setStoreName] = useState('Xible Shoes');
   const navigate = useNavigate();
   const { cartItems, totalItems } = useCart();
   const { t } = useLanguage();
-  const { user, isAuthenticated, isAdmin } = useAuth();
-  const isMobile = useIsMobile();
+  const { user, isAuthenticated } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -37,22 +33,19 @@ const Navbar = () => {
     };
   }, []);
   
-  // Load store logo and name
+  // Carregar logo do site
   useEffect(() => {
-    const loadStoreSettings = () => {
+    const loadStoreLogo = () => {
       const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
       if (settings.logo) {
         setLogo(settings.logo);
       }
-      if (settings.name) {
-        setStoreName(settings.name);
-      }
     };
     
-    loadStoreSettings();
+    loadStoreLogo();
     
     const handleSettingsUpdate = () => {
-      loadStoreSettings();
+      loadStoreLogo();
     };
     
     window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
@@ -71,49 +64,32 @@ const Navbar = () => {
     }
   };
 
-  const { isEditing } = useEditMode();
-
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isSticky ? 'bg-background shadow-md py-2' : 'bg-background/80 backdrop-blur-lg py-4'
     }`}>
       <div className="container mx-auto px-4 md:px-6">
         <nav className="flex items-center justify-between">
-          {/* Logo and Brand Name */}
-          <Link to="/" className="flex items-center gap-3 flex-shrink-0">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
             <img 
               src={logo} 
-              alt={storeName} 
+              alt="Xible Store" 
               className="h-10 w-auto object-contain" 
               onError={(e) => {
+                // Fallback to default logo if custom logo fails to load
                 const target = e.target as HTMLImageElement;
-                target.src = '/logo.svg';
+                target.src = '/logo.svg'; 
+                console.log('Error loading custom logo, falling back to default');
               }}
             />
-            <EditableLink 
-              to="/"
-              className="text-lg font-semibold hidden sm:block"
-              isEditing={isEditing}
-              onSave={(text) => {
-                setStoreName(text);
-                localStorage.setItem('storeSettings', JSON.stringify({ ...JSON.parse(localStorage.getItem('storeSettings') || '{}'), name: text }));
-              }}
-            >
-              {storeName}
-            </EditableLink>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <EditableLink to="/" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navHome')}</EditableLink>
-            <EditableLink to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navCatalog')}</EditableLink>
-            <EditableLink to="/about" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navAbout')}</EditableLink>
-            <EditableLink to="/contact" className="text-sm font-medium hover:text-primary transition-colors" isEditing={isEditing}>{t('navContact')}</EditableLink>
-            {isAdmin && (
-              <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                Admin
-              </Link>
-            )}
+            <Link to="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">{t('catalog')}</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">{t('about')}</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">{t('contact')}</Link>
           </div>
 
           {/* Search & Cart */}
@@ -175,16 +151,9 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-background border-t border-border/10 px-4 py-6">
           <div className="flex flex-col space-y-4">
-            <Link to="/" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('home') || 'Home'}</Link>
-            <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog') || 'Catalog'}</Link>
-            <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about') || 'About Us'}</Link>
-            <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact') || 'Contact'}</Link>
-            
-            {isAdmin && (
-              <Link to="/admin" className="text-sm font-medium text-primary" onClick={() => setIsMenuOpen(false)}>
-                {t('admin') || 'Admin'}
-              </Link>
-            )}
+            <Link to="/catalogo" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('catalog')}</Link>
+            <Link to="/about" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('about')}</Link>
+            <Link to="/contact" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('contact')}</Link>
             
             {isAuthenticated ? (
               <Link to="/profile" className="text-sm font-medium" onClick={() => setIsMenuOpen(false)}>{t('profile')}</Link>
