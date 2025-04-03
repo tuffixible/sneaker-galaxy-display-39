@@ -46,6 +46,14 @@ export const ThemeProvider: React.FC<{children: ReactNode}> = ({ children }) => 
     localStorage.setItem('theme', theme);
   }, [theme]);
   
+  // Apply theme colors
+  useEffect(() => {
+    document.documentElement.style.setProperty('--primary-color', colors.primary);
+    document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+    document.documentElement.style.setProperty('--accent-color', colors.accent);
+    document.documentElement.style.setProperty('--background-color', colors.background);
+  }, [colors]);
+  
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}

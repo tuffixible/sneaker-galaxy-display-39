@@ -10,10 +10,10 @@ interface ThemeColors {
 
 export const useThemeColors = () => {
   const [colors, setColors] = useState<ThemeColors>({
-    primary: '#2ecc71',
-    secondary: '#f5f5f5',
-    accent: '#ff4d00',
-    background: '#F5F5F5'
+    primary: '#3b82f6', // Updated to a nicer blue
+    secondary: '#f5f7fa', // Updated to a slightly blue-white
+    accent: '#0ea5e9', // Updated to a lighter blue
+    background: '#f0f5fa' // Updated to an off-white with blue tint
   });
 
   useEffect(() => {
@@ -28,10 +28,10 @@ export const useThemeColors = () => {
         });
 
         // Apply colors to CSS variables
-        document.documentElement.style.setProperty('--primary', settings.primaryColor || colors.primary);
-        document.documentElement.style.setProperty('--secondary', settings.secondaryColor || colors.secondary);
-        document.documentElement.style.setProperty('--accent', settings.accentColor || colors.accent);
-        document.documentElement.style.setProperty('--background', settings.backgroundColor || colors.background);
+        document.documentElement.style.setProperty('--primary-color', settings.primaryColor || colors.primary);
+        document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || colors.secondary);
+        document.documentElement.style.setProperty('--accent-color', settings.accentColor || colors.accent);
+        document.documentElement.style.setProperty('--background-color', settings.backgroundColor || colors.background);
       }
     };
 

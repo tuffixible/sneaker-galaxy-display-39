@@ -2,6 +2,7 @@
 import React from 'react';
 import { MessageCircle, Instagram, Phone } from 'lucide-react';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 interface FloatingSocialButtonsProps {
   whatsappNumber?: string;
@@ -9,7 +10,7 @@ interface FloatingSocialButtonsProps {
 }
 
 const FloatingSocialButtons: React.FC<FloatingSocialButtonsProps> = ({
-  whatsappNumber = "5511999999999", // Formato: código do país + DDD + número
+  whatsappNumber = "5511999999999",
   instagramUser = "xiblestore"
 }) => {
   // Carrega as configurações das redes sociais do localStorage
@@ -62,22 +63,34 @@ const FloatingSocialButtons: React.FC<FloatingSocialButtonsProps> = ({
         onClick={handleWhatsAppClick}
         variant="whatsapp"
         size="circle"
-        animation="bounce"
+        animation="float"
         aria-label="Chat no WhatsApp"
-        className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg transform transition-transform hover:scale-110"
+        className={cn(
+          "h-12 w-12 rounded-full shadow-lg",
+          "flex items-center justify-center",
+          "transition-all duration-300",
+          "bg-gradient-to-r from-green-500 to-green-600",
+          "hover:shadow-green-300/50 hover:shadow-xl"
+        )}
       >
-        <MessageCircle size={24} />
+        <MessageCircle size={24} className="text-white animate-pulse" />
       </Button>
       
       <Button
         onClick={handleInstagramClick}
         variant="instagram"
         size="circle"
-        animation="scale"
+        animation="float"
         aria-label="Siga no Instagram"
-        className="bg-gradient-to-tr from-purple-600 to-pink-500 text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg transform transition-transform hover:scale-110"
+        className={cn(
+          "h-12 w-12 rounded-full shadow-lg",
+          "flex items-center justify-center",
+          "transition-all duration-300",
+          "bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400",
+          "hover:shadow-pink-300/50 hover:shadow-xl"
+        )}
       >
-        <Instagram size={24} />
+        <Instagram size={24} className="text-white animate-pulse" />
       </Button>
     </div>
   );
